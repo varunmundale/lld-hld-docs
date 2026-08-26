@@ -2,6 +2,8 @@
 
 *Transcribed from handwritten Xournal++ notebook (`hld_problems.xopp`), 74 pages.*
 
+*All whiteboard diagrams are indexed in [`diagrams/README.md`](diagrams/README.md).*
+
 ## Table of Contents
 
 - [HLD Interview Framework](#page-1--hld-interview-framework)
@@ -83,6 +85,12 @@ CDS
 - When user uses the short URL, redirect to the original one.
 - Solve for main website
 - Verification of website out of scope
+
+### HLD Diagram
+
+![Bit.ly — HLD](diagrams/bitly.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=WT2EFU3JY0P8enlgIToll,5QtCoQ75ZJedhQaDZu7rMg) · offline copy: [`diagrams/excalidraw/bitly.excalidraw`](diagrams/excalidraw/bitly.excalidraw)</sub>
 
 ### Functional requirements
 1. Client requests for a URL to shorten; return shortened URL. Optionally custom-alias.
@@ -182,6 +190,12 @@ GET /analytics/<hash>
 - Pricing etc.
 
 ### HLD Diagram
+
+![Dropbox — HLD](diagrams/dropbox.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=nID9gxJejWa3D-TxY3SaW,9D05b95SJD66wdE80jGenw) · offline copy: [`diagrams/excalidraw/dropbox.excalidraw`](diagrams/excalidraw/dropbox.excalidraw)</sub>
+
+**Mermaid recreation of the same design:**
 
 ```mermaid
 flowchart LR
@@ -382,6 +396,13 @@ GET /events/:id
 ```
 
 ### HLD Diagram
+
+![TicketMaster — HLD](diagrams/ticketmaster.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=sDUW_qleuTdBh7rOnsknW,8Oviae-K2f89zgtfX8FXTA) · offline copy: [`diagrams/excalidraw/ticketmaster.excalidraw`](diagrams/excalidraw/ticketmaster.excalidraw)</sub>
+
+**Mermaid recreation of the same design:**
+
 ```mermaid
 flowchart LR
     Client --> API
@@ -438,6 +459,12 @@ Social media, focused on visual content, allowing users to share photos & videos
 - Infinite scroll?
 - Archival?
 - Any specific order for scrolling?
+
+### HLD Diagram
+
+![Instagram — HLD](diagrams/instagram.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=zwT6qrMUDrkBnFJ845zD6,V8nuSYhIovpTSFJs16EGEA) · offline copy: [`diagrams/excalidraw/instagram.excalidraw`](diagrams/excalidraw/instagram.excalidraw)</sub>
 
 ### Functional requirements
 1. User should be able to post
@@ -518,6 +545,12 @@ GET /feed → Post[]
 - Available system. Security, low latency
 - Local DB storage? History view?
 - Multiple devices
+
+### HLD Diagram
+
+![WhatsApp — HLD](diagrams/whatsapp.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=mW43XyI2CzMsUr971I347,_Mdoj88cQ9pAKldBgwxRrw) · offline copy: [`diagrams/excalidraw/whatsapp.excalidraw`](diagrams/excalidraw/whatsapp.excalidraw)</sub>
 
 ### Functional Requirements
 1. User should be [able to] send/calls in group
@@ -609,6 +642,12 @@ Eg. 100 requests/user in a minute.
 - Should we keep history?
 - Security (o-o-s)
 
+### HLD Diagram
+
+![Rate Limiter — HLD](diagrams/rate-limiter.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=LtnIGz-XUrIoJxhaMSeEX,aEQ1_DinfWdXLBeogXYFUg) · offline copy: [`diagrams/excalidraw/rate-limiter.excalidraw`](diagrams/excalidraw/rate-limiter.excalidraw)</sub>
+
 ### Functional requirements
 1. When client/device requests (API key) — either reject or accept, return response
 2. Configure rate limiter for different APIs with different strategies
@@ -679,6 +718,12 @@ Header:
 *(numbered "17" in the original notes — problems 15 & 16 are not present/labeled in the notebook)*
 
 Video sharing platform that allows upload, view, and interact with video.
+
+### HLD Diagram
+
+![YouTube — HLD](diagrams/youtube.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=Qo6-izWdN-5OeVSdeHY6J,23jKl3dLnys9RH5998uP7Q) · offline copy: [`diagrams/excalidraw/youtube.excalidraw`](diagrams/excalidraw/youtube.excalidraw)</sub>
 
 ### Scoping
 - Upload, stream videos
@@ -754,6 +799,18 @@ GET /video/:videoId
 ## Problem 18 — Job Scheduler — 14h(?)
 
 Job scheduler automatically schedules & executes jobs at specified times or intervals.
+
+### HLD Diagram
+
+The board holds two passes at this problem. First pass — scheduler + dispatcher + resource manager:
+
+![Job Scheduler — first pass](diagrams/job-scheduler-v1.png)
+
+Second pass — DAG / dependency-aware version:
+
+![Job Scheduler — DAG version](diagrams/job-scheduler-dag.png)
+
+<sub>Whiteboard source (both passes on one board) — [open in Excalidraw](https://excalidraw.com/#json=PdkuLRHRkSKDPcxxzznI4,oZP6D_ZFfvofSiBbR0aLow) · offline copies: [`job-scheduler.excalidraw`](diagrams/excalidraw/job-scheduler.excalidraw) (full board), [`job-scheduler-v1.excalidraw`](diagrams/excalidraw/job-scheduler-v1.excalidraw), [`job-scheduler-dag.excalidraw`](diagrams/excalidraw/job-scheduler-dag.excalidraw)</sub>
 
 ### Scoping / Considerations
 - One-time, adhoc, scheduled
@@ -849,6 +906,12 @@ Clear separation of:
 ## Problem 20 — News Aggregator — 6h
 
 Google News — aggregates & displays news articles from 1000's of publishers, scrollable interface.
+
+### HLD Diagram
+
+![News Aggregator — HLD](diagrams/news-aggregator.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=_kd9RWnO2ZgV-1CEqx2oK,MLSlyH1OCZi4X_yayQA5Cw) · offline copy: [`diagrams/excalidraw/news-aggregator.excalidraw`](diagrams/excalidraw/news-aggregator.excalidraw)</sub>
 
 ### Scoping
 - Scrape 1000's publishers
@@ -950,6 +1013,12 @@ Top-K system for YouTube video views.
 - Durability — all time
 - Scale?
 
+### HLD Diagram
+
+![YouTube Top K — HLD](diagrams/youtube-top-k.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=qFpXLkEEF_co8vwYTo3_E,PR7nZg2bYd-QARXv3oaiVw) · offline copy: [`diagrams/excalidraw/youtube-top-k.excalidraw`](diagrams/excalidraw/youtube-top-k.excalidraw)</sub>
+
 ### Functional requirements
 1. Given a window {hour, day} — return top K videos; all time.
 2. Tumbling window: last 1 hour, 1 day, 1 month, all time
@@ -1002,6 +1071,12 @@ Specialized DB: Pinot, Druid, Clickhouse (avoid if possible)
 
 - Ride sharing platform
 - Book rides on-demand. Match them with nearby drivers.
+
+### HLD Diagram
+
+![Uber — HLD](diagrams/uber.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=WMC8ktijaBd36WtqVmDF7,zogX5KbAdt46Mn-5JKDwbw) · offline copy: [`diagrams/excalidraw/uber.excalidraw`](diagrams/excalidraw/uber.excalidraw)</sub>
 
 ### Scoping
 - Phones by driver & rider: single phone?
@@ -1109,6 +1184,12 @@ Document editor. Collaborate with others in real-time.
 - Doc management?
 - Read/write management
 
+### HLD Diagram
+
+![Google Docs — HLD](diagrams/google-docs.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=Ws1HV9V--frtwYbR5sGAs,HoZwm6nrUfLbWnx2e42R_g) · offline copy: [`diagrams/excalidraw/google-docs.excalidraw`](diagrams/excalidraw/google-docs.excalidraw)</sub>
+
 ### Functional requirements
 1. Create a new doc
 2. Add users with permissions
@@ -1182,6 +1263,12 @@ Traverse web pages, index web pages which will be used by search engines.
 - Page rank?
 - Freshness, elastic search used?
 
+### HLD Diagram
+
+![Web Crawler — HLD](diagrams/web-crawler.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=Bxy9fIfz8fu-Q8bbOLRUp,qrRvXHX9enCFHnNmkmAI-A) · offline copy: [`diagrams/excalidraw/web-crawler.excalidraw`](diagrams/excalidraw/web-crawler.excalidraw)</sub>
+
 ### Functional requirements
 1. Start with seedURL and traverse webpages
 2. Extract text data from each web page & store the text for later processing
@@ -1236,6 +1323,12 @@ DNS optimizations (caching)
 ## Problem 27 — Ad Click Aggregator — 3h
 
 Collects & aggregates data on ad clicks. Advertisers track ad performance. E.g. ads on Facebook. (Flink?)
+
+### HLD Diagram
+
+![Ad Click Aggregator — HLD](diagrams/ad-click-aggregator.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=AuugT7GZ615GJ1icbeexX,B0nJOzIy3U1s--pLHiU3DA) · offline copy: [`diagrams/excalidraw/ad-click-aggregator.excalidraw`](diagrams/excalidraw/ad-click-aggregator.excalidraw)</sub>
 
 ### Functional requirements
 1. When user clicks on ad, capture all telemetry info as part of the event
@@ -1299,6 +1392,12 @@ E.g. user clicks multiple times, same event.
 ---
 
 ## Problem 29 — Payment System — 1h
+
+### HLD Diagram
+
+![Payment System — HLD](diagrams/payment-system.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=mV_Y1DRdYdFUZ9r771chc,YIpzvyvTsYzkUPKbh5um6Q) · offline copy: [`diagrams/excalidraw/payment-system.excalidraw`](diagrams/excalidraw/payment-system.excalidraw)</sub>
 
 ### Goals
 1. Merchants: single Stripe API
@@ -1405,6 +1504,12 @@ Can CDC fail? — Can be recovered from WAL or OPLOG (replica set)
 
 ## Problem 33 — Notification System — 11h
 
+### HLD Diagram
+
+![Notification System — HLD](diagrams/notification-system.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=GH-RfT38opkc2eLY6iRuz,41CwgV6vRifRhK3qKmlWcA) · offline copy: [`diagrams/excalidraw/notification-system.excalidraw`](diagrams/excalidraw/notification-system.excalidraw)</sub>
+
 ### Functional
 - Send email notifications
 - Priority 1-10
@@ -1449,6 +1554,10 @@ Kafka: 1-10 partitions based on priority
 ---
 
 ## Problem 35 — RAG Application with Ingestion Pipeline
+
+### Reference design
+
+<sub>Worked submission — [hellointerview.com/community/submissions/system-design/cmmwinscm06mb0fadf371kg4t](https://www.hellointerview.com/community/submissions/system-design/cmmwinscm06mb0fadf371kg4t) (external link; no Excalidraw board for this one)</sub>
 
 - Training documents store
 - Model training

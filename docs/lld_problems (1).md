@@ -710,6 +710,8 @@ Singleton + Writer composition + Observer on logger + concurrency
 ## 13) Rate Limiter (Full Design)
 *(numbered "8)")*
 
+> Deployment-level view of the same problem: [Rate Limiter HLD diagram](diagrams/rate-limiter.png) — see [HLD Problem 13](<hld_problems (3).md#problem-13--rate-limiter--12h>).
+
 - How many client requests API can make (window)
 - request → rateLimiter checks. If cap hit, request rejected.
 
