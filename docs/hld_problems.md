@@ -2,6 +2,47 @@
 
 *Transcribed from handwritten Xournal++ notebook (`hld_problems.xopp`), 74 pages.*
 
+*All whiteboard diagrams are indexed in [`diagrams/README.md`](diagrams/README.md).*
+
+## Table of Contents
+
+- [HLD Interview Framework](#page-1--hld-interview-framework)
+1. [Bit.ly (URL Shortener)](#problem-1--bitly-url-shortener--1h) — 1h
+2. [Dropbox](#problem-2--dropbox--8h) — 8h *(with architecture diagram)*
+3. [Yelp](#problem-3--yelp--4h) — 4h *(title only)*
+4. [Local Delivery Service](#problem-4--local-delivery-service) *(title only)*
+5. [TicketMaster](#problem-5--design-a-ticketmaster--8h) — 8h *(with architecture diagram)*
+6. [Instagram](#problem-6--instagram--6h) — 6h
+7. [FB News Feed](#problem-7--fb-news-feed) *(title only)*
+8. [Tinder](#problem-8--tinder--2h) — 2h *(title only)*
+9. [Leetcode](#problem-9--leetcode--3h) — 3h *(title only)*
+10. [WhatsApp](#problem-10--whatsapp--18h) — 18h
+11. [Strava](#problem-11--strava--1h) — 1h *(title only)*
+12. [Distributed Cache](#problem-12--distributed-cache--1h) — 1h *(title only)*
+13. [Rate Limiter](#problem-13--rate-limiter--12h) — 12h
+14. [Online Auction](#problem-14--online-auction--4h) — 4h *(title only)*
+17. [YouTube](#problem-17--youtube--4h) — 4h
+18. [Job Scheduler](#problem-18--job-scheduler--14h) — 14h
+19. [FB Live Comments](#problem-19--fb-live-comments--2h) — 2h *(title only)*
+20. [News Aggregator](#problem-20--news-aggregator--6h) — 6h
+21. [Price Tracking Service](#problem-21--price-tracking-service--1h) — 1h *(title only)*
+22. [YouTube Top K](#problem-22--youtube-top-k--9h) — 9h
+23. [Uber](#problem-23--uber--4h) — 4h
+24. [Robinhood](#problem-24--robinhood--1h) — 1h *(title only)*
+25. [Google Docs](#problem-25--google-docs--5h) — 5h
+26. [Web Crawler](#problem-26--web-crawler--5h) — 5h
+27. [Ad Click Aggregator](#problem-27--ad-click-aggregator--3h) — 3h
+28. [FB Post Search](#problem-28--fb-post-search--3h) — 3h *(title only)*
+29. [Payment System](#problem-29--payment-system--1h) — 1h
+30. [Metrics Monitoring](#problem-30--metrics-monitoring) *(title only)*
+31. [Online Chess](#problem-31--online-chess) *(title only)*
+32. [ChatGPT](#problem-32--chatgpt) *(title only)*
+33. [Notification System](#problem-33--notification-system--11h) — 11h
+34. [Game Leaderboard](#problem-34--game-leaderboard--3h) — 3h *(title only)*
+35. [RAG Application with Ingestion Pipeline](#problem-35--rag-application-with-ingestion-pipeline)
+
+*Note: problems 15, 16 are not present in the notebook — numbering jumps from 14 to 17 in the original notes. Problem 33 was labeled "B1" and 34/35 as "B2"/"B3" in the source, likely denoting a second batch — renumbered here as 33-35 for continuity.*
+
 ---
 
 ## Page 1 — HLD Interview Framework
@@ -44,6 +85,12 @@ CDS
 - When user uses the short URL, redirect to the original one.
 - Solve for main website
 - Verification of website out of scope
+
+### HLD Diagram
+
+![Bit.ly — HLD](diagrams/bitly.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=WT2EFU3JY0P8enlgIToll,5QtCoQ75ZJedhQaDZu7rMg) · offline copy: [`diagrams/excalidraw/bitly.excalidraw`](diagrams/excalidraw/bitly.excalidraw)</sub>
 
 ### Functional requirements
 1. Client requests for a URL to shorten; return shortened URL. Optionally custom-alias.
@@ -143,6 +190,12 @@ GET /analytics/<hash>
 - Pricing etc.
 
 ### HLD Diagram
+
+![Dropbox — HLD](diagrams/dropbox.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=nID9gxJejWa3D-TxY3SaW,9D05b95SJD66wdE80jGenw) · offline copy: [`diagrams/excalidraw/dropbox.excalidraw`](diagrams/excalidraw/dropbox.excalidraw)</sub>
+
+**Mermaid recreation of the same design:**
 
 ```mermaid
 flowchart LR
@@ -343,6 +396,13 @@ GET /events/:id
 ```
 
 ### HLD Diagram
+
+![TicketMaster — HLD](diagrams/ticketmaster.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=sDUW_qleuTdBh7rOnsknW,8Oviae-K2f89zgtfX8FXTA) · offline copy: [`diagrams/excalidraw/ticketmaster.excalidraw`](diagrams/excalidraw/ticketmaster.excalidraw)</sub>
+
+**Mermaid recreation of the same design:**
+
 ```mermaid
 flowchart LR
     Client --> API
@@ -399,6 +459,12 @@ Social media, focused on visual content, allowing users to share photos & videos
 - Infinite scroll?
 - Archival?
 - Any specific order for scrolling?
+
+### HLD Diagram
+
+![Instagram — HLD](diagrams/instagram.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=zwT6qrMUDrkBnFJ845zD6,V8nuSYhIovpTSFJs16EGEA) · offline copy: [`diagrams/excalidraw/instagram.excalidraw`](diagrams/excalidraw/instagram.excalidraw)</sub>
 
 ### Functional requirements
 1. User should be able to post
@@ -480,6 +546,12 @@ GET /feed → Post[]
 - Local DB storage? History view?
 - Multiple devices
 
+### HLD Diagram
+
+![WhatsApp — HLD](diagrams/whatsapp.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=mW43XyI2CzMsUr971I347,_Mdoj88cQ9pAKldBgwxRrw) · offline copy: [`diagrams/excalidraw/whatsapp.excalidraw`](diagrams/excalidraw/whatsapp.excalidraw)</sub>
+
 ### Functional Requirements
 1. User should be [able to] send/calls in group
 2. User should be able to create groups
@@ -545,3 +617,981 @@ PUT /groups/create {
 - Separate GroupManagement, MessageService, BroadcastService
 - No need to handle out-of-order
 
+---
+
+## Problem 11 — Strava — 1h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 12 — Distributed Cache — 1h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 13 — Rate Limiter — 12h(?)
+
+Controls request, 4xx — too many requests, or return response.
+Eg. 100 requests/user in a minute.
+
+- When user hits API — reject or return
+- Return with tries remaining
+- Highly available
+- (Not hard) Consistent in terms of managing quota
+- Latency low < 10ms
+- Should we keep history?
+- Security (o-o-s)
+
+### HLD Diagram
+
+![Rate Limiter — HLD](diagrams/rate-limiter.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=LtnIGz-XUrIoJxhaMSeEX,aEQ1_DinfWdXLBeogXYFUg) · offline copy: [`diagrams/excalidraw/rate-limiter.excalidraw`](diagrams/excalidraw/rate-limiter.excalidraw)</sub>
+
+### Functional requirements
+1. When client/device requests (API key) — either reject or accept, return response
+2. Configure rate limiter for different APIs with different strategies
+3. In response, return proper limit, quota, strategy, when can be retried
+
+### NFR
+1. Available all the time — 5 9's
+2. Slight inconsistency tolerable
+3. Latency < 10ms
+4. Scale
+
+### Out of scope
+- Security
+- Keeping rate limit history
+
+### API
+```
+PUT /configure {
+  api
+  rateLimitStrategy
+  limitPer
+  limit
+}
+
+GET/POST /limiter {
+  api
+}
+Header:
+  user
+  api-key
+  device
+  IP
+```
+
+### Deep dive
+**1) How do we scale to handle 1M requests/second?**
+- Distributed Redis `LADD` requests
+- Consistent hashing + LB
+
+**2) High availability**
+- Redis + consistent hashing + async read replicas
+
+**3) Minimize latency overhead**
+- Connection pooling (network bottleneck)
+- Redis
+- Shard by geo-locality
+
+**4) Hot-keys**
+- Add clients to temp **blocklist**
+
+**5) Dynamic rule config**
+- Keep polling after some intervals
+
+### Summary
+1. Configurable rate limiters, separate management from action
+2. Sliding window — keep requests with timestamps (delete on expiry)
+3. Scale state writes on cache — network bottleneck → connection pooling; cache write + consistent hashing + async
+4. Fault tolerance/availability — async replicas (can read from replicas depending on how hard consistency is)
+
+---
+
+## Problem 14 — Online Auction — 4h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 17 — YouTube — 4h
+*(numbered "17" in the original notes — problems 15 & 16 are not present/labeled in the notebook)*
+
+Video sharing platform that allows upload, view, and interact with video.
+
+### HLD Diagram
+
+![YouTube — HLD](diagrams/youtube.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=Qo6-izWdN-5OeVSdeHY6J,23jKl3dLnys9RH5998uP7Q) · offline copy: [`diagrams/excalidraw/youtube.excalidraw`](diagrams/excalidraw/youtube.excalidraw)</sub>
+
+### Scoping
+- Upload, stream videos
+- Security
+- Latency to load videos
+- Scalability
+- User auth security
+- Durability
+- Availability: the service should be up
+- Freshness < 15 mins
+- Thumbnails, comments, likes
+
+### Functional Requirements
+1. User can upload video
+2. Multiple users can stream the video
+
+### NFR
+1. The video should load quickly < 500ms
+2. No buffering
+3. Service should be available 5 9's
+4. Video stored is durable once uploaded
+5. Consistency — eventual. Freshness < 15 mins
+6. Multi quality support — low network environment
+7. Resumable uploads
+
+### Out of scope
+- Thumbnails, comments, likes
+- UI
+- Security, user management
+- Search, subscribe
+
+### API
+```
+Header: user
+POST /upload {
+  videoLocation
+  name
+  title
+} →
+
+GET /video/:videoId
+→ Video & VideoMeta
+```
+
+### Deep dive
+**1) How can we handle processing video to support adaptive bitrate streaming?**
+- Chunked downloads with different adaptive quality support
+- An async job uploads video in different quality
+- When user requests, different quality rendered based on n/w bitrate
+
+**2) How to make resumable uploads?**
+- When n/w drops & user reconnects, fetch from chunk-status service all uploaded & non-uploaded chunks
+- Upload only the pending ones
+
+**3) Scale to large # videos uploaded**
+- Scale video processor service — can be a DAG: quality processing & compress
+- S3 + CDN replication — n/w latency
+- Scale streaming service, read-only
+
+**Speeding uploads**
+- Can also pipeline chunks with quality & compression processing
+
+### Summary
+- S3 + CDN as a storage for cost-effective and n/w latency optimized
+- Upload + quality processing + compression
+- Consistent hashing + web sockets for streaming
+- Chunked upload — separate VideoMetaDB & Chunk DB
+- Client-side chunking utility
+- Client-side streaming script
+
+---
+
+## Problem 18 — Job Scheduler — 14h(?)
+
+Job scheduler automatically schedules & executes jobs at specified times or intervals.
+
+### HLD Diagram
+
+The board holds two passes at this problem. First pass — scheduler + dispatcher + resource manager:
+
+![Job Scheduler — first pass](diagrams/job-scheduler-v1.png)
+
+Second pass — DAG / dependency-aware version:
+
+![Job Scheduler — DAG version](diagrams/job-scheduler-dag.png)
+
+<sub>Whiteboard source (both passes on one board) — [open in Excalidraw](https://excalidraw.com/#json=PdkuLRHRkSKDPcxxzznI4,oZP6D_ZFfvofSiBbR0aLow) · offline copies: [`job-scheduler.excalidraw`](diagrams/excalidraw/job-scheduler.excalidraw) (full board), [`job-scheduler-v1.excalidraw`](diagrams/excalidraw/job-scheduler-v1.excalidraw), [`job-scheduler-dag.excalidraw`](diagrams/excalidraw/job-scheduler-dag.excalidraw)</sub>
+
+### Scoping / Considerations
+- One-time, adhoc, scheduled
+- NFR — lowest cadence?
+- Where will the jobs execute — resource manager designed?
+- Success/failure of the job; success/failure of resource manager
+- List all active jobs?
+- Retries
+
+### NFR
+- API latency
+- Consistency (duplicate runs)
+
+### Functional requirements
+1. User registers scheduled/adhoc job (assume simple executable)
+2. When triggered, resources allocated to job. Job is executed, success/failure returned. Retry?
+3. Log → job scheduling statuses; job statuses
+4. Monitor jobs
+
+### Non-functional requirements
+1. Latency < 50ms to schedule, trigger job
+2. Job should start < 1min from schedule/trigger time
+3. Consistency — no duplicate runs; should run as scheduled (exactly once)
+4. Retries: if job instance fails
+5. Scale: how many jobs run concurrently? 10k/second
+
+→ Availability is preferred — **at-least-once**
+
+### Entities
+- Job
+- JobInstance
+- ResourceManager
+
+### API
+```
+POST /create {
+  name
+  type
+  start
+  end, frequency
+  resourceConfig
+  executableLocation
+} → JobConfig
+```
+
+### Deep dive
+**1) How to ensure system executes jobs within 2s of scheduled time?**
+- Create JobInstances from JobConfig
+- Keep a thread pool
+- JobDispatcher manages this thread pool
+- Fetch all instances with status != SUCCESS
+- Assign one thread to each job:
+  - (a) This thread monitors the status for each job, retries if needed
+  - (b) Calls RM (Resource Manager) to assign resources
+  - (c) Collects statuses & updates DB
+- Repeat
+
+To scale more, put a queue where JobInstances are pushed (based on ascending execution time). Consumer — SQS.
+
+**2) How to ensure scalable 10k jobs/s**
+- Same as above
+- Use queue for durability
+- Scale job creation service + DB
+- Queue for `/create`, maybe overkill. LB + horizontal scale job management.
+
+**3) Ensure at-least-once execution?**
+- The scheduler fetches all unprocessed jobs within limit
+- SQS retries & updates DB
+
+**Failures:**
+- (a) **Visible failures**: job exits with error code, SQS retries
+- (b) **Invisible failures**: SQS worker consumes & fails. **Timeout**: SQS makes message automatically visible after timeout (if no explicit delete called)
+
+**Prerequisite:** At-least-once execution means job should be **idempotent**.
+
+### Summary
+Clear separation of:
+- JobConfig — when & what type of job
+- JobInstance — create instances based on scheduled time
+- JobScheduler — get due jobs & put in queue
+- JobDispatcher — actually run job
+
+- Scale services & DB
+- Idempotent at-least-once execution
+
+---
+
+## Problem 19 — FB Live Comments — 2h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 20 — News Aggregator — 6h
+
+Google News — aggregates & displays news articles from 1000's of publishers, scrollable interface.
+
+### HLD Diagram
+
+![News Aggregator — HLD](diagrams/news-aggregator.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=_kd9RWnO2ZgV-1CEqx2oK,MLSlyH1OCZi4X_yayQA5Cw) · offline copy: [`diagrams/excalidraw/news-aggregator.excalidraw`](diagrams/excalidraw/news-aggregator.excalidraw)</sub>
+
+### Scoping
+- Scrape 1000's publishers
+- Fetch for latest
+- Process articles: title, summarize, tag with categories
+- For user, which is served — display top 100 based on preferences
+
+### NFR
+- Latency
+- Consistency (freshness)
+- Availability
+
+### Functional requirements
+1. Scrape publisher sites — fetch, process, store latest news: title, category, summary, link
+2. User configures preferences
+3. User gets top N news → scroll, next top N
+4. User clicks on article — redirected to publisher website
+
+### Non-functional requirements
+1. Latency, reasonably fast (< 1s) top 100
+2. Availability: high — user should get feed whenever requested
+3. Consistency — stale publish tolerable (within few minutes)
+4. Scale & concurrency: 100M DAU, spike: 500M
+
+### Observation
+- Read-heavy
+- Popular posts (celebrity)
+
+### Entities
+- User
+- Publisher
+- FeedSummary
+- UserPreference
+
+### API
+```
+Header: X-Header: User
+GET /feed?offset
+
+Header: User
+POST /preferences
+```
+
+### Deep dive
+**1) How to ensure news feed gets generated quickly < 1s**
+- Index UserFeed DB on user_id
+- The feed is pre-generated
+- CDN + cache
+
+**2) How to make sure news is fresh (few minutes)**
+- Implement poller, for each publisher (lastSync)
+- Fetch news, put it in the queue & summarize
+- Keep user feed ready
+- Publisher webhook? (not sustainable)
+
+**3) How to support scale**
+- (a) Geographically partitioned. Partition key = location + user_id. UserDB — Cassandra
+- (b) CDN for NewsSummaryDB
+
+**4) How to handle popular news?**
+- Cache NewsSummaryDB
+- Regional feed
+
+**5) System support peak load**
+- (a) Scale reads: news GET (Cassandra); NewsSummary cache; horizontally scale, LB, autoscale (multiple read replicas)
+- (b) Scale writes: increase queue consumers
+
+**6) Improve pagination consistency & efficiency?**
+Problem: duplicate articles in feed
+- Server maintains a cursor-timestamp
+- Client needs to send this for every request
+
+**7) Store media content efficiently**
+- S3 + CDN cache
+
+### Summary
+1. Separate news summarizer flow
+2. Populate feed for every user in a DB
+3. (a) Scale reads: read replica, cache, DB choice, precompute feed; CDN (images), App (horizontal), DB (horizontal), index uid in feed
+   (b) Popular post — cache + CDN (regional)
+4. Scale writes: DB choice, App (horizontal)
+5. Freshness: stream E2E + CDC + RSS webhook/polling
+6. Latency: CDN, Redis cache
+7. Pagination trick: keep cursor-timestamp/user
+
+---
+
+## Problem 21 — Price Tracking Service — 1h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 22 — YouTube Top K — 9h
+
+Top-K system for YouTube video views.
+- Precisely top-K most viewed videos from 1 hour, 1 day, 1 month
+- Highly consistent
+- Lag is tolerable?
+- Durability — all time
+- Scale?
+
+### HLD Diagram
+
+![YouTube Top K — HLD](diagrams/youtube-top-k.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=qFpXLkEEF_co8vwYTo3_E,PR7nZg2bYd-QARXv3oaiVw) · offline copy: [`diagrams/excalidraw/youtube-top-k.excalidraw`](diagrams/excalidraw/youtube-top-k.excalidraw)</sub>
+
+### Functional requirements
+1. Given a window {hour, day} — return top K videos; all time.
+2. Tumbling window: last 1 hour, 1 day, 1 month, all time
+   - ⭐ No arbitrary time periods
+
+### NFR
+1. The views should be exact — consistency
+2. Queryable for all time — durable
+3. Latency < 10ms. Result set < 1k
+4. Scale — massive
+5. Freshness — 1 minute
+
+### API
+```
+GET /views/top-k?window=HOUR&k=<K>
+→ Videos[]
+```
+
+### Deep dive
+**1) How can we cut down # queries to DB?**
+- GET bottleneck, query for every GET request
+- Precompute Top-K for each time window. Periodically refresh this (per minute).
+
+**2) Handle massive number of writes?**
+Writes: 700k ops/sec — massive.
+- Sharding ingestion — partition by video_id
+- Microbatch for 1hr (works well for tumbling window)
+- Use **Flink**! Exactly designed for this. Define frequency of writes.
+- This controls writes. Partition by video_id & process.
+
+**3) How do we optimize Top-K queries?**
+- Disallow random windows
+- Compute from pre-aggregated & sort (hours)
+
+**4) How to support sliding windows**
+- Flink job at **minute** grain
+- Write to sink (DB) at minute grain; update hour, day, all-time accordingly
+
+Specialized DB: Pinot, Druid, Clickhouse (avoid if possible)
+
+### Summary
+1. Need to reduce write to DB a lot — use Flink at minute granularity
+2. Need to reduce read (Top-K) — introduce a cache with all granularity
+
+*(Note: Flink aggregates at lowest, minute granularity)*
+
+---
+
+## Problem 23 — Uber — 4h
+
+- Ride sharing platform
+- Book rides on-demand. Match them with nearby drivers.
+
+### HLD Diagram
+
+![Uber — HLD](diagrams/uber.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=WMC8ktijaBd36WtqVmDF7,zogX5KbAdt46Mn-5JKDwbw) · offline copy: [`diagrams/excalidraw/uber.excalidraw`](diagrams/excalidraw/uber.excalidraw)</sub>
+
+### Scoping
+- Phones by driver & rider: single phone?
+- Track route?
+- Request & match based on GPS
+- User management & security
+- Different states, different cars — automated matching?
+- User checks ride — source, destination
+- Options, selects a car type
+- User requests ride with a car type
+- Multiple riders notified
+- Rider accepts ride. Ride started.
+- Ride completed.
+- Scope down to matching
+
+### Functional requirements
+1. Riders input source, dest — get fare estimate
+2. Riders should be able to request ride
+3. Rider matched to nearest & available [driver]
+4. Drivers accept/decline a request
+5. Track car
+
+### NFR
+1. Low latency < 1min match
+2. No double booking — consistent
+3. Support scale for concurrent users. Celebrity problem: high requests from same location (100k)
+
+### API
+```
+Rider:
+Header: user
+POST /getEstimate {
+  source
+  destination
+} → Ride[]
+
+Header: user
+POST /request {
+  source
+  destination
+  ride-type
+} → Ride/reject
+
+Driver:
+POST /drivers/location { }
+PATCH /rides/:rideId {
+  accept/deny
+}
+```
+
+### Deep dive
+**1) How to handle frequent driver update location**
+High-frequency writes.
+- Write-back cache
+- Periodically update DB for durability
+- Rider reads cache
+- In-memory geospatial data (Redis)
+
+**2) How can ensure location accuracy?**
+- Read from cache
+- Adaptive location update intervals on client side, based on speed, direction
+
+**3) How to prevent double booking?**
+- Use transactional ACID-compliant distributed DB
+- Concurrency management
+
+**4) How to prevent multiple ride requests from being sent to same driver?**
+- Ideally, should be allowed
+- Redis with TTL
+
+**5) Ensure no ride requests dropped**
+- Introduce a queue to matching service with dynamic horizontal scaling
+
+**6) What happens if a driver fails to respond in timely manner**
+- Durable execution — **Temporal**
+
+**7) Further scale & reduce latency, & improve throughput**
+- Geosharding DB to reduce latency + consistent hashing for fault tolerance
+
+### Summary
+- Lot of things with user actions should be scoped down
+- Notification service — driver/rider
+- Workflows (Temporal) — for user actions
+- Redis cache — optimize location updates
+- ACID compliant DB to handle double booking
+- Geosharding for latency
+- Queue with dynamic scaling — peak requests
+- Handle duplicate requests to rider — Redis + TTL
+
+---
+
+## Problem 24 — Robinhood — 1h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 25 — Google Docs — 5h
+
+Document editor. Collaborate with others in real-time.
+- Conflict should be resolved
+- Online utility?
+- Only text?
+- Security?
+- Low latency
+- Doc management?
+- Read/write management
+
+### HLD Diagram
+
+![Google Docs — HLD](diagrams/google-docs.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=Ws1HV9V--frtwYbR5sGAs,HoZwm6nrUfLbWnx2e42R_g) · offline copy: [`diagrams/excalidraw/google-docs.excalidraw`](diagrams/excalidraw/google-docs.excalidraw)</sub>
+
+### Functional requirements
+1. Create a new doc
+2. Add users with permissions
+3. Make text changes to the doc — autosave
+4. User should be able to view other cursor positions
+
+### NFR
+1. Highly consistent collaboration and conflict resolution
+2. Latency — instant < 50ms (near real-time)
+3. Available — service should not go down
+4. Scalability
+5. Durability — save docs
+
+### Out of scope
+- Security, heavy user management
+- Document history
+
+### API's
+```
+Headers: user
+POST /modify {
+  cursor (line, col)
+  op: create/update/delete
+  char
+  readVersion
+  doc-id
+} → DOC
+
+POST /docs/create {
+  name
+  collaborators[]
+}
+
+PUT /docs/users {
+  docId
+  users[]
+}
+```
+
+### Deep dive
+**1) How to ensure latency is minimal?**
+- Bring doc into cache
+- Modify doc in-memory
+- Write snapshot periodically
+- Use websockets. Use consistent hashing for distribution.
+
+**2) How to ensure concurrent writes?**
+- MVCC + optimistic locking
+- User reads
+- Modifies
+- Before applying, service checks if conflict-free. If so, apply changes; else reject.
+- Apply changes
+
+OR CRDT, OT (operational transforms) — adaptive transforms on edits
+
+**3) How to keep storage under control?**
+- Write snapshots
+
+### Summary
+1. Minimal latency — CRDT + OT (or MVCC + OCC) + in-memory client + in-memory service + websockets
+2. Separate Docs Metadata & Doc Service
+3. Scale: consistent hashing on websockets
+4. Snapshotting for durability
+
+---
+
+## Problem 26 — Web Crawler — 5h
+
+Traverse web pages, index web pages which will be used by search engines.
+- Seed URLs, traverse, duplicate webpages
+- Page rank?
+- Freshness, elastic search used?
+
+### HLD Diagram
+
+![Web Crawler — HLD](diagrams/web-crawler.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=Bxy9fIfz8fu-Q8bbOLRUp,qrRvXHX9enCFHnNmkmAI-A) · offline copy: [`diagrams/excalidraw/web-crawler.excalidraw`](diagrams/excalidraw/web-crawler.excalidraw)</sub>
+
+### Functional requirements
+1. Start with seedURL and traverse webpages
+2. Extract text data from each web page & store the text for later processing
+
+### NFR
+1. Freshness — few hours
+2. Fault tolerance — handle failures & resume
+3. Scale
+4. Efficient to crawl in 5 days
+
+### Out of scope
+- Security, rate limiting
+
+### Steps
+1. Get seed URLs
+2. Fetch webpages for seed URL
+3. Extract: (a) text (b) URLs
+4. Store text
+5. Repeat from (ii)
+
+### Deep dive
+**1) How to ensure fault tolerant & don't lose progress?**
+- Separate services
+- Use CDC + queues + SQS
+- Maintain last visited time
+
+For each process, keep a retry limit.
+- (a) What if we fail to fetch URL? — SQS with retries, if still fails put in DLQ
+- (b) What if fetcher goes down? — still requests are there in queue
+
+**2) How can we ensure politeness (robots.txt)?**
+- Fetch robots.txt
+- Keep a state for some domain
+- Rate limit (some domain)
+
+**3) How to scale to 10B pages < 5 days**
+- Deduplicate URL
+- Deduplicate content by hashing
+- Horizontal scale
+- Max depth for crawler for a website
+
+### Summary
+1. Separate SeedURL, WebpageFetcher, Extraction
+2. Maintain CDC queues in between + SQS
+3. Rate limit for politeness
+4. Horizontal scale, deduplicate URL + content
+
+DNS optimizations (caching)
+
+---
+
+## Problem 27 — Ad Click Aggregator — 3h
+
+Collects & aggregates data on ad clicks. Advertisers track ad performance. E.g. ads on Facebook. (Flink?)
+
+### HLD Diagram
+
+![Ad Click Aggregator — HLD](diagrams/ad-click-aggregator.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=AuugT7GZ615GJ1icbeexX,B0nJOzIy3U1s--pLHiU3DA) · offline copy: [`diagrams/excalidraw/ad-click-aggregator.excalidraw`](diagrams/excalidraw/ad-click-aggregator.excalidraw)</sub>
+
+### Functional requirements
+1. When user clicks on ad, capture all telemetry info as part of the event
+2. Advertisers can query ad click metrics over time window
+
+### NFR
+1. Minimum granularity is 1 min
+2. Scale
+3. Eventual consistency. Freshness of < 15 mins
+4. Fault tolerant — no event should be missed
+5. Idempotent click tracking
+6. Query latency ≈ sub-second
+
+### API
+```
+PUT /click {
+  ClickDetails
+}
+
+GET /analytics {
+  aggBy: campaign
+  window: <start, end>
+}
+```
+
+### Deep dive
+**1) How can we scale to support 10k clicks per second?**
+- Kafka + partitions + Flink horizontally scalable
+- Limit writes to 1min on all dimensions
+
+**Hot shards:** partition-key(ad_id) + salt(0-N)
+
+**2) How do we ensure we don't lose clicks?**
+- Durable replicated Kafka
+- Aggregation window of 1 min
+- Durable replicated DB (aggregated)
+
+⭐ Because of bad node, events can be lost.
+- Archive events periodically to S3 + Kafka window period = guarantee
+
+**3) How to enforce idempotency of event?**
+E.g. user clicks multiple times, same event.
+- Based on user_id + duplicate window in Flink
+- If not user_id, (device_id, IP etc)
+
+**4) How to ensure advertisers can query fast?**
+- Pre-aggregated OLAP tables
+
+### Summary
+1. ClickService — push clicks to queue, redirect
+2. Pre-aggregated analytics table
+3. Ads DB to store all info + redirect URL
+4. Idempotency (user_id/IP) + duplicity window
+5. Store all clicks in S3 to avoid loss
+
+---
+
+## Problem 28 — FB Post Search — 3h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 29 — Payment System — 1h
+
+### HLD Diagram
+
+![Payment System — HLD](diagrams/payment-system.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=mV_Y1DRdYdFUZ9r771chc,YIpzvyvTsYzkUPKbh5um6Q) · offline copy: [`diagrams/excalidraw/payment-system.excalidraw`](diagrams/excalidraw/payment-system.excalidraw)</sub>
+
+### Goals
+1. Merchants: single Stripe API
+2. Operational complexity hidden — refund, chargeback (customer init), tax, Stripe fees etc.
+
+Payment processing like Stripe.
+- Businesses accept payments from merchants
+- Customer → payment details, on merchant website → Stripe
+
+### Scoping / Considerations
+- Business registered on Stripe
+- Business has OMS → redirected [to] Stripe's payment page
+- Support different payment methods (cards)
+
+**On submit:**
+```
+card {
+  - request to Issuer Bank
+  - request to Depositor Bank
+} → success/failure
+```
+
+- Stripe notifies the business of successful payment
+
+### Functional requirements
+1. Merchants initiate payment requests
+2. Users pay with different payment methods
+3. Merchants view status for a payment
+
+### Non-functional requirements
+1. High consistency: no double transaction, no inconsistent payment
+2. High availability: 99.99999% uptime, but consistency > availability
+3. Robustness: attempt payment retry
+4. Latency < 1s payment completion
+5. Security: E2E encrypted, storage encrypted, UI encrypted (hide)
+6. Durability & auditability: no transaction loss, dropped
+7. Scalable: 10k+ TPS
+
+**CAP, ACID, recovery, robustness**
+
+### Deep dive
+*(Legend: Client = C, PG = Payment Gateway, public key = PU, private key = PR)*
+
+**1) The system should be highly secure**
+1. Merchant displays payment page. The UI page has iframe, JavaScript SDK.
+2. Encrypt payment details using PU_pg
+3. The client & server share a symmetric key K_cs. The payload is encrypted via SSL. (Don't [store] payment details on PG.)
+4. PG forwards data to external payment network (decrypt by K_cs), encrypt by K_pgc (SSL)
+
+**2) The system should guarantee durability & auditability**
+- Online DB handles read/writes to transactions
+- CDC — WAL or oplog capture every committed change
+- Immutable event stream: CDC publishes to Kafka
+- Different subscribers listen to this (can recreate whole world)
+
+Can CDC fail? — Can be recovered from WAL or OPLOG (replica set)
+
+**3) External payment networks async. How to guarantee correctness/integrity?**
+
+**Approach 1:**
+- Keep a PENDING state
+- Background job keeps on polling payment network for success
+- + Idempotency key on payment_id (when user retries, return same record)
+
+**Problem:**
+- When lot of payments stuck in PENDING
+- Database has to serve read load for these
+
+**Approach 2:**
+1. Record the attempt — 'PENDING' in DB
+2. Call the payment n/w with timeout
+3. If success, mark [success]
+4. If timeout, push this into CDC queue for recon call. Keep polling till response.
+5. If failed, mark failed
+
+**4) How to handle scale**
+- Services + Kafka + DB
+
+### Summary
+1. Consistency: strong consistent DB, ACID
+2. Security: iframe + SSL
+3. Robustness + Async 3rd-party payment n/w:
+   - Async payment-status check based on payment n/w timeout, CDC
+   - Have PENDING status
+4. Availability: replica in DB
+5. Recovery: immutable event log in Kafka
+
+---
+
+## Problem 30 — Metrics Monitoring
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 31 — Online Chess
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 32 — ChatGPT
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 33 — Notification System — 11h
+
+### HLD Diagram
+
+![Notification System — HLD](diagrams/notification-system.png)
+
+<sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=GH-RfT38opkc2eLY6iRuz,41CwgV6vRifRhK3qKmlWcA) · offline copy: [`diagrams/excalidraw/notification-system.excalidraw`](diagrams/excalidraw/notification-system.excalidraw)</sub>
+
+### Functional
+- Send email notifications
+- Priority 1-10
+- Retry failures
+- At-least-once delivery
+
+### NFR
+- High throughput
+- High available
+- No email loss
+- Fair scheduling
+- Retry
+- Horizontal scaling
+
+### API
+```
+POST /notification {
+  userId
+  email
+  template
+  priority
+}
+```
+
+→ Notification service → Kafka → Scheduler → SQS → Email Workers
+
+Kafka: 1-10 partitions based on priority
+
+### Deep dive
+**1) Why not 1 topic with priority field?**
+- Cannot efficiently "skip" low priority message
+
+**2) Low-priority — delayed but no starvation**
+
+**3) At-least-once guarantee** — delete message from SQS only after sent
+
+---
+
+## Problem 34 — Game Leaderboard — 3h
+*(title only in notes — no further detail recorded)*
+
+---
+
+## Problem 35 — RAG Application with Ingestion Pipeline
+
+### Reference design
+
+<sub>Worked submission — [hellointerview.com/community/submissions/system-design/cmmwinscm06mb0fadf371kg4t](https://www.hellointerview.com/community/submissions/system-design/cmmwinscm06mb0fadf371kg4t) (external link; no Excalidraw board for this one)</sub>
+
+- Training documents store
+- Model training
+- Given a query, answer specifically — knowledge AI
+
+### Requirements
+1. API to upload documents + update
+2. Model trains on every document
+3. User queries → answer given
+4. Based on user feedback, retrain model
+
+### NFR
+1. Response ≥ 1s
+2. Availability, eventual consistent
+3. Cost control checks?
+
+### Steps (Ingestion)
+1. Extraction — parse CSV, PDF, Wiki
+2. Chunking — convert to specific size limit
+3. Create embedding for each chunk & store
+4. Create ES index
+
+### Steps (Query)
+1. Do an embedding search / text search on docs
+2. Retrieve relevant chunks (ES returns this)
+3. LLM reads & generates answer
+   → Add in the context window
+
+### Summary
+- Store + (Temporal)
+- Multistep: parse + chunk + embed + index
+- Metadata: doc status
+- Query Service: RAG — retrieve + augment + generate
+
+---
+
+*End of transcription.*

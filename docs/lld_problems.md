@@ -2,6 +2,26 @@
 
 *Transcribed from handwritten Xournal++ notebook (`lld_problems.xopp`), 41 pages.*
 
+## Table of Contents
+1. [Task Scheduler](#1-task-scheduler) *(with class diagram)*
+2. [Publisher-Subscriber Model](#2-publisher-subscriber-model)
+3. [Payment Wallet (LLD)](#3-payment-wallet-lld)
+4. [Rate Limiter](#4-rate-limiter) *(title only)*
+5. [Google Calendar (Slot)](#5-google-calendar-slot) *(title only)*
+6. [Connect Four](#6-connect-four) *(with class diagram)*
+7. [Amazon Locker](#7-amazon-locker)
+8. [Elevator](#8-elevator)
+9. [Parking Lot](#9-parking-lot)
+10. [File System](#10-file-system) *(with class diagram)*
+11. [Movie Ticket Booking](#11-movie-ticket-booking)
+12. [Logging Service](#12-logging-service)
+13. [Rate Limiter (Full Design)](#13-rate-limiter-full-design)
+14. [Inventory Management](#14-inventory-management)
+15. [Build a Rule Engine](#15-build-a-rule-engine) *(with class diagram)*
+16. [Design Spreadsheet with Formulas](#16-design-spreadsheet-with-formulas) *(with class diagram)*
+
+*Note: problem numbering resets partway through the notebook (pages restart at "1" around Connect Four, then continue "2, 4, 5, 8, 9, 10..." from Amazon Locker onward) — renumbered here sequentially 1–16 for continuity, with the original in-notes number preserved as a parenthetical where it jumps.*
+
 ---
 
 ## 1) Task Scheduler
@@ -524,3 +544,400 @@ File, folder within same folder, same name?
 - Multiple roots
 - Book keeping (created, modified)
 
+### Entities
+- **File**: name, text, Path
+- **Folder**: name, Path
+- **Path**: `List<String> nodes`, `parsePath`
+
+### FileService
+- createFile
+- delete
+- move
+- rename
+- createFolder
+- list (display)
+
+### Internal Structure
+Graph / Tree
+
+**Folder**
+- name
+- Path
+- `Map<name, Folder>`
+- `addChild()`
+
+**File**
+- setContent
+- getContent
+- `@addChild()` — "invalid"
+
+⭐ Better is to have abstract base class `FileSystemNode`
+```mermaid
+classDiagram
+    class FileSystemNode {
+        <<abstract>>
+    }
+    FileSystemNode <|-- Folder
+    FileSystemNode <|-- File
+```
+
+⚠️ To implement `move` — cycle detection
+
+### Extensibility
+1. How to make system thread safe (check-then-act)
+   - **Coarse-grained**: permit only one operation on entire filesystem by having a single lock
+   - **Fine-grained lock**: create lock for every folder involved (to avoid deadlock, acquire locks in consistent order)
+   - **Coarse-grained read-write lock** with retries
+2. How would you add search functionality
+   e.g. search config.json
+   - Perform DFS on folder, return empty if !exists, return path if exists, combine paths at root. O(n)
+   - If optimization? Use index
+
+---
+
+## 11) Movie Ticket Booking
+*(Similar to parking slot)*
+
+- Users search movie
+- Browse theatres, showtimes
+- Select seat
+- Reserve ticket
+
+### Scoping questions / Requirements
+1. User search movie by name (exact?) — can also browse theatres → return `List<Show>`
+   *(strategy good here)*
+2. List shows. `Show = theatre, screen, timings`. List by theatre?
+3. User selects show → list available seats (no fancy seats)
+4. User selects seats (block for 10 mins)
+5. User confirms & books seat (pays). The seat is confirmed & ticket returned. (No cancellations)
+
+### Edge cases
+- Concurrent flow handling
+- When 2 users book same seat
+
+### Out of scope
+- UI
+- Payment
+- Cancellation flow
+- Fancy search
+- Fancy cancellations
+- Full-fledged DB
+
+### Entities
+- **Theatre**: `List<Show>`
+- **Show**: startTime, endTime, `List<Seats>`, Movie
+- **Movie**: name
+
+- **SearchService**: searchByMovie, searchByTheatre → `List<Show>`
+- **Theatre**: addShow
+- **Show**: seats, start, end, movie (movie shared across)
+- **BookingService**:
+  - selectSeats(show, List\<Seat\>)
+  - bookSeats(show, List\<Seat\>)
+
+### Concurrency
+1. Coarse-grain → single bookSeatsThread
+2. Medium-grain → read lock on gets, write lock on book (check & set)
+3. Lock for every seat, acquired in consistent order
+
+- For every seat can also go for atomic reference: status, compareAndSet
+  (But should be avoided in case we need to perform bookSeat op in multiple steps)
+
+### Extensibility
+1. Support dynamically adding shows, movies, theatres — expose methods
+2. How to implement temporary seat holds
+
+For Seat: have status {AVAILABLE, ON_HOLD, BOOKED}
+- On successful payment confirmation: ON_HOLD → BOOKED
+- Wait for payment flow to succeed (keep window, use refund)
+
+---
+
+## 12) Logging Service
+
+In-process library
+1. `logger.info("user signed in")` — message, timestamp, severity
+2. `logger.warn` — S1, S2, S3
+
+### Scoping Requirements
+1. Will single application call?
+2. What if different services call? (where to stamp svc-name?)
+3. What levels?
+4. Where will logger write?
+   - Console
+   - File
+   - Multiple destinations
+5. Formats? JSON, CSV, plaintext — depends on destination (but independent)
+6. Concurrency — one record write should not mix up [with another]
+
+### Requirements
+1. Single application, singleton central logger
+2. Multiple levels
+3. Multiple dest
+4. Multiple formats — initialized at startup
+5. Concurrency
+
+### Entities
+- **Logger**: debug, log, warn, info, error, fatal
+- **Writer**: Console, File (abstract with subclasses)
+- **Writer**: Format {CSV, JSON, plaintext}
+- **Formatter**: format
+- **LogRecord**: timestamp, level, message
+
+Singleton + Writer composition + Observer on logger + concurrency
+
+### Extensibility
+1. How to make `log()` non-blocking?
+   - Flaky writers
+   - We can make writes **async**
+   - Put a blocking queue (which sleeps when condition [full/empty])
+   - Process requests
+
+**Follow-ups**
+1. Graceful shutdowns
+2. Bounded queue → drop in case queue full (throw exception to client)
+
+- Async-write: non-blocking behavior
+- Thread-safe-write: no interleaving
+
+2. Hierarchical named logger?
+   - (a) `com.app.service` → Logger
+   - (b) `com.app.service.payment` → Logger
+   - If (b) is null, fallback to (a). Factory + `getInstance`
+
+---
+
+## 13) Rate Limiter (Full Design)
+*(numbered "8)")*
+
+> Deployment-level view of the same problem: [Rate Limiter HLD diagram](diagrams/rate-limiter.png) — see [HLD Problem 13](hld_problems.md#problem-13--rate-limiter--12h).
+
+- How many client requests API can make (window)
+- request → rateLimiter checks. If cap hit, request rejected.
+
+### Scoping
+1. Where is rate limiter located?
+   `client → rateLimiter → API`. All calls go to rate limiter.
+   `register(apiName)`, `check(apiName)` — (quota, window)
+2. Multiple APIs
+3. `step()` simulation? Or system time?
+4. Multiple algo extensible? Templatize RateLimiter?
+5. Static rules? What else parameter — user, API, device?
+   `request, config` — config is heterogeneous. Return (status, message)? When to retry/reset?
+6. No config?
+7. Concurrency? ✗
+
+### Flow
+- Client calls RateLimiter (headers + algo, Request)
+- RateLimiter is configured for APIs (config varies for different algos)
+- RateLimiter accepts, redirects to actual API & returns response, else
+- Reject request with (code, response)
+- `step()` function — SystemService
+
+### Out of scope
+- Distributed
+- Complex rules?
+
+### Entities
+- **Request**
+- **RateLimiter**: config, (status, code), `process(Request)` → SlidingWindow
+- **Config**: API
+- **SlidingWindow** (maintain queue, clear expired)
+- **SystemService**: `step()`
+- **APIRateLimiter mapping**: `Map<API, RateLimiter>`
+
+### Extensibility
+1. How would you add new rate-limit algorithm?
+   - Add it in the factory for each API
+2. Dynamically handle config changes?
+   - Update in factory object via put method
+   - **Better**: expose `updateConfig` method for each limiter to **preserve** the ongoing state
+3. How to handle concurrency?
+   - ConcurrentHashMap — makes sure requests are added consistently in queue
+   - Locks per limiterKey: to atomically execute check-and-set operations (in this case, cleanup + accept/reject request — check on limit)
+4. Memory growth?
+   - Extract out storage + lock — storage layer
+
+---
+
+## 14) Inventory Management
+*(numbered "8)")*
+
+- Product stocks, multiple warehouses
+- Inventory add to warehouse
+- Order ships, deduct stock
+- Transfer inventory between warehouses
+- Alerting
+
+### Scoping
+1. How is order placed? AVAIL, RESERV
+2. Different thresholds for low?
+3. When order placed, nearest warehouse — what if not available?
+4. Fixed warehouses at start?
+5. Concurrency? Multiple requests, same warehouse
+6. When inventory runs low, trigger automatic transfer?
+
+### Assumptions
+- No -ve inventory
+- Fixed warehouse
+- Order directed to ONLY nearest warehouse
+
+### Requirements
+1. Track warehouse inventories
+2. Add stock
+3. Remove stock (no OMS)
+4. When inventory low:
+   - Alert warehouse (client)
+   - Request transfer between warehouse
+5. Concurrency
+
+### Entities
+- **WarehouseService**: `Map<Warehouse>`, addStock, removeStock, transfer
+- **Warehouse**: id, addStock, removeStock, `Map<PI>` (Product Inventory)
+- **ProductInventory**: Product, quantity
+- **AlertConfig**: (threshold, AlertListener)
+
+AlertConfiguration is tricky!
+
+### Extensions
+1. How do you prevent overselling?
+   - Locking
+   - Order place, shipped — single operation
+   - In real life, add status "reserve" to differentiate. Lock-only & reserve/available.
+   - Pessimistic vs optimistic
+2. How would you handle inventory that's being shipped between?
+   - Currently atomic operation
+   - Treat logistics also as warehouse (not visible to end users)
+
+---
+
+## 15) Build a Rule Engine
+*(numbered "9)")*
+
+Users can define rules:
+- `age > 18`
+- `country == "IN"`
+
+**Condition**: operator, key, value
+**User**: age, salary, experience
+
+- How is input object given? Is it a map?
+- Datatype validation in scope? Is there ordering? Nested values?
+
+**Condition**
+- operator
+- key
+- value
+
+**Condition** (recursive form)
+- condition (type, key)
+- operator
+- condition (type, value)
+- type
+
+**Expression** = (expression op expression)
+Type: `>`, `<`, `=`, `!=` — int, String, instanceOf
+
+- Unary?
+- Binary?
+- Nested?
+- Brackets?
+
+### Solution
+- Tokenize
+- Parse, using a stack once expression is populated
+- Collapse the stack, & evaluate
+
+- Factory to support different types
+- Composite pattern to expressions
+
+```mermaid
+classDiagram
+    class Expression
+    class Unary {
+        constant, key
+    }
+    class Binary {
+        e1 op e2
+    }
+    Expression <|-- Unary
+    Expression <|-- Binary
+```
+
+Dynamically decide which evaluator for `(e1 op e2) op (e3 op e4)`
+
+---
+
+## 16) Design Spreadsheet with Formulas
+*(numbered "10)")*
+
+### Requirements
+1. Each cell can have literal
+2. Cell can have formula
+3. Formula: `+ - / *` (no brackets)
+4. If we update x, all dependent cells updated
+5. Memoize while doing so
+
+### Out of scope
+- Brackets
+- Validation?
+
+**Cell** (location, expression)
+`record Location()`
+- Use this in `nodesMap`
+- Dependency graph: `Map<Location, Set<Location>>`
+
+When expression starts with `=` — formula based
+
+```mermaid
+classDiagram
+    class Expression {
+        evaluate()
+    }
+    class LiteralExpression
+    class ValueExpression
+    class BinaryExpression {
+        e1 op e2
+    }
+    Expression <|-- LiteralExpression
+    Expression <|-- ValueExpression
+    Expression <|-- BinaryExpression
+```
+
+**Parser** — `split("\\s")`
+Expression creator: operator, operand stack — alternate operator & operand
+
+- Traverse graph to get downstreams. Re-evaluate that cell expression.
+- Detect cycle in dependency graph.
+
+While updating any cell, detect cycle with formula.
+
+### API
+```
+setValue(location: str, value)
+getValue(location)
+```
+
+### Excel
+Dependency graphs — outDependencies, inDependencies
+`Map<loc, Cell>`
+- expression
+- value
+- → location
+
+When we `setValue` in cell:
+1. If literal → evaluate, expression = LiteralExp
+2. If expression:
+   - Parse & create expression
+   - & upsert dependency graph
+
+- While updating, check cycle in dependency graph; else throw error, otherwise add
+- Update all downstreams (call setValue)
+
+`Excel → Cell → Expression → VariableExp` (init)
+
+During update, there can be cyclic dependency.
+
+---
+
+*End of transcription.*

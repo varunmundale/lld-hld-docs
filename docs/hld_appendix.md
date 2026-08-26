@@ -2,6 +2,27 @@
 
 *Transcribed from handwritten Xournal++ notebook (`hld_appendix.xopp`), 24 pages.*
 
+## Table of Contents
+
+**[A) Different Types of Consistencies](#a-different-types-of-consistencies)**
+1. [Single Node, with single thread](#1-single-node-with-single-thread)
+2. [Single Leader + Replica (Asynchronous)](#2-single-leader--replica-asynchronous)
+3. [Single Node + Replica (Synchronous)](#3-single-node--replica-synchronous)
+4. [Single Node with multiple thread](#4-single-node-with-multiple-thread)
+5. [Partitioning (Sharding)](#5-partitioning-sharding)
+6. [Sharding + Replication (Leaderless)](#6-sharding--replication-leaderless) — Cassandra-style, tunable consistency
+7. [Sharding + Replication (Leader-based)](#7-sharding--replication-leader-based) — Spanner/CockroachDB-style
+   - [Linearizability guarantee](#linearizability-guarantee)
+   - [Serializability guarantee](#serializability-guarantee)
+
+**[B) Technologies](#b-technologies)**
+1. [Elastic Search](#1-elastic-search-eventual-consistent) *(with sequence diagram)*
+2. [Cassandra](#2-cassandra)
+3. [Kafka](#3-kafka)
+4. [Redis](#4-redis)
+5. [Iceberg](#5-iceberg) *(with diagram)*
+6. [Pinot](#6-pinot) *(with architecture diagram)*
+
 ---
 
 ## A) Different Types of Consistencies
@@ -425,3 +446,109 @@ Consumer: commit offset correctly
 - `retention.ms` (time)
 - `retention.bytes` (based on size)
 
+### 4) Redis
+✗ Durability
+
+**Motivation**
+```
+SET foo 1
+GET foo
+INCR foo (atomically)
+XADD mystream ...   ✗read
+       ↑ stream
+```
+
+Leader-based, replicated.
+
+✗ consistent hashing — **Slot**
+- If a node goes down, replica → promoted to primary
+
+**Shard:** Only way to shard Redis is **key**.
+
+**Problem:** hot-key. **Solution:** salting.
+
+`Map<Key, Object>`
+
+- Redis as rate-limiter (high R/W). Expiry: TTL.
+
+**Stream:** at-least-once
+- Claim an item. Delete an item.
+- Problem (orphan item) — delete not committed
+
+### Sorted sets
+`POP` — `ZREMRANGEBYRANK`. Remove all but the top 5.
+
+### Geospatial Index
+```
+GEOSEARCH FROMLONLAT BYRADIUS (5km WITHDIST)
+```
+Static locations?
+
+### PubSub
+Server — subscribers & publishers.
+At-most-once (best-effort)
+
+### 5) Iceberg
+
+Catalog → Root-pointer
+
+```mermaid
+flowchart TD
+    Catalog["Catalog → root-pointer"]
+    V1["v1.metadata.json — S0"]
+    V2["v2.metadata — S0, S1"]
+    V3["v3.metadata — S0, S1, S2"]
+    Catalog --> V1
+    Catalog --> V2
+    Catalog --> V3
+    V3 --> S0ML["S0 ManifestList"]
+    V3 --> S1ML["S1 ManifestList"]
+    S0ML --> S0MF["ManifestFile S0"] --> DataFile0["data file"]
+    S1ML --> S1MF["S1 Manifest"] --> Delta["delta (data file, by date partition)"]
+```
+
+Time-travel, auditability.
+
+### 6) Pinot
+
+**Controller** — cluster manager (ZK, Helix based)
+**Broker** — query management
+
+### Pinot Architecture
+
+```mermaid
+flowchart TB
+    RESTQ["REST {QUERY}"] --> Broker
+    RESTA["REST {ADMIN}"] --> Controller
+
+    subgraph ServingCluster [" "]
+        Broker <--> RealtimeServer["Realtime Server"]
+        Broker <--> OfflineServer["Offline Server"]
+        RealtimeServer -. Notify .-> Controller
+        OfflineServer -. Notify .-> Controller
+    end
+
+    subgraph ControllerBox ["Controller"]
+        ZK
+        Helix
+    end
+    Controller --- ControllerBox
+
+    DataMotion["Data in motion\n(Apache Kafka, Azure EventHub,\nAmazon Kinesis, Google PubSub)"] -- Realtime Ingest --> RealtimeServer
+    RealtimeServer -- Write Segment --> SegmentStore[("Segment Store\nNFS, HDFS, Azure Storage,\nAmazon S3, Google Storage")]
+    OfflineServer -- Load Segment --> SegmentStore
+    RawData["Data at Rest"] --> IngestionJob["Ingestion Job"]
+    IngestionJob -- Write Segment --> SegmentStore
+    IngestionJob -. Notify Upload Segment .-> Controller
+```
+
+**Segment**: SST → replace segments
+**Store**:
+- Partition by month
+- Segment push type = replace
+
+Recreate monthly segments.
+
+---
+
+*End of transcription.*
