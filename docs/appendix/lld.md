@@ -2,6 +2,8 @@
 
 *Transcribed from handwritten Xournal++ notebook (`lld_appendix.xopp`), 12 pages.*
 
+[← Appendix index](README.md) · [All docs](../README.md)
+
 ## Table of Contents
 - [A) Concurrency](#a-concurrency)
   - Reference table: Correctness / Coordination / Scarcity

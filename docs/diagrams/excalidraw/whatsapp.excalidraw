@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "https://excalidraw.com",
+  "source": "https://excalidraw-jetbrains-plugin",
   "elements": [
     {
       "id": "0Mdvvhcq4J6Pb0PNra6q9",
@@ -53,9 +53,9 @@
     {
       "id": "a3YL0BzKGkz2pgYoXn-2K",
       "type": "text",
-      "x": 339.3600311279297,
+      "x": 342.056640625,
       "y": 326.5,
-      "width": 54.279937744140625,
+      "width": 48.88671875,
       "height": 25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -70,11 +70,11 @@
       "index": "a2",
       "roundness": null,
       "seed": 1640639107,
-      "version": 8,
-      "versionNonce": 535115651,
+      "version": 9,
+      "versionNonce": 1813070543,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1783935947024,
+      "updated": 1787762871230,
       "link": null,
       "locked": false,
       "text": "Client",
@@ -85,7 +85,8 @@
       "containerId": "0Mdvvhcq4J6Pb0PNra6q9",
       "originalText": "Client",
       "autoResize": true,
-      "lineHeight": 1.25
+      "lineHeight": 1.25,
+      "baseline": 19
     },
     {
       "id": "jfQqQqmnp8y0wtweLcsmK",
@@ -237,7 +238,8 @@
       "startArrowhead": "arrow",
       "endArrowhead": "arrow",
       "elbowed": false,
-      "moveMidPointsWithElement": false
+      "moveMidPointsWithElement": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "ze4-SA6AGGEdmBhk8ll1K",
@@ -571,7 +573,8 @@
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "IYq70Z867tGkRjy4W3tyJ",
@@ -630,7 +633,8 @@
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "g1_Vw_qR9olhTW7ubWmEx",
@@ -811,7 +815,8 @@
       "elbowed": true,
       "fixedSegments": null,
       "startIsSpecial": null,
-      "endIsSpecial": null
+      "endIsSpecial": null,
+      "lastCommittedPoint": null
     },
     {
       "id": "xMwiK_P2pdZ103x5H0RkD",
@@ -912,7 +917,8 @@
       "elbowed": true,
       "fixedSegments": null,
       "startIsSpecial": null,
-      "endIsSpecial": null
+      "endIsSpecial": null,
+      "lastCommittedPoint": null
     },
     {
       "id": "VP-Jh8coLSoB5z94c6YtH",
@@ -1128,7 +1134,8 @@
       "elbowed": true,
       "fixedSegments": null,
       "startIsSpecial": null,
-      "endIsSpecial": null
+      "endIsSpecial": null,
+      "lastCommittedPoint": null
     },
     {
       "id": "GL3BACMlH89RBECzt3vDe",
@@ -1304,7 +1311,8 @@
       },
       "startArrowhead": "arrow",
       "endArrowhead": "arrow",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "eXEnRYHe9WNYEFO5W9I_m",
@@ -1364,7 +1372,8 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "moveMidPointsWithElement": false
+      "moveMidPointsWithElement": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "I_8UOjWMZeyrzWfxGXhFA",
@@ -1504,7 +1513,8 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "moveMidPointsWithElement": false
+      "moveMidPointsWithElement": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "F7Nzwx3tT9zbvgSyHhEyJ",
@@ -1564,7 +1574,8 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "moveMidPointsWithElement": false
+      "moveMidPointsWithElement": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "LlcN2Wi0aj81SZ0BJxHZl",
@@ -1608,7 +1619,7 @@
       "type": "text",
       "x": 258,
       "y": 428.5,
-      "width": 425.19952392578125,
+      "width": 346.005859375,
       "height": 375,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -1623,11 +1634,11 @@
       "index": "b02",
       "roundness": null,
       "seed": 1848124717,
-      "version": 251,
-      "versionNonce": 808421805,
+      "version": 252,
+      "versionNonce": 805445985,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1783938891233,
+      "updated": 1787762872040,
       "link": null,
       "locked": false,
       "text": "Header\nx-user: <uid>\nPOST /message/create{\n    group_id\n    text\n    image/video\n} - Message\n\nPUT /groups/create{\n    user[]\n    name\n    image\n} - Group\n\nGET /sync?lastSuccessful - ChangeEvent[]",
@@ -1638,7 +1649,8 @@
       "containerId": null,
       "originalText": "Header\nx-user: <uid>\nPOST /message/create{\n    group_id\n    text\n    image/video\n} - Message\n\nPUT /groups/create{\n    user[]\n    name\n    image\n} - Group\n\nGET /sync?lastSuccessful - ChangeEvent[]",
       "autoResize": true,
-      "lineHeight": 1.25
+      "lineHeight": 1.25,
+      "baseline": 369
     },
     {
       "id": "bsyM2ICOCFiD2rrcH5Mal",
@@ -1698,7 +1710,8 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "moveMidPointsWithElement": false
+      "moveMidPointsWithElement": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "bI5pSas6YpSY2rK7pTdGo",
@@ -1838,7 +1851,8 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "moveMidPointsWithElement": false
+      "moveMidPointsWithElement": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "3fR5A5_Q_3Q378YLhuAyl",
@@ -1897,14 +1911,13 @@
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     }
   ],
   "appState": {
-    "gridSize": 20,
-    "gridStep": 5,
-    "gridModeEnabled": false,
-    "viewBackgroundColor": "#ffffff",
-    "lockedMultiSelections": {}
-  }
+    "gridSize": null,
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
 }

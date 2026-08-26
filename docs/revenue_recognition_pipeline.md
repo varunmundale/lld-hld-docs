@@ -1,7 +1,7 @@
 # Revenue Recognition — End to End
 
 *Standalone whiteboard design. Not part of the HLD problem set — kept separately because there is no
-matching problem in [`hld_problems.md`](hld_problems.md).*
+matching problem in the [HLD problem set](hld/README.md).*
 
 ![Revenue Recognition — end-to-end pipeline](diagrams/revenue-recognition.png)
 

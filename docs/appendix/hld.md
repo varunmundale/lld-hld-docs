@@ -2,6 +2,8 @@
 
 *Transcribed from handwritten Xournal++ notebook (`hld_appendix.xopp`), 24 pages.*
 
+[← Appendix index](README.md) · [All docs](../README.md)
+
 ## Table of Contents
 
 **[A) Different Types of Consistencies](#a-different-types-of-consistencies)**
