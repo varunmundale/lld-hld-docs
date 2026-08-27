@@ -1,0 +1,61 @@
+# One spec, driven twice by PinotSegmentSwap.scala — once with
+# jobType=SegmentCreation, then once with jobType=SegmentMetadataPush inside the
+# open lineage transaction. Values are substituted per run by
+# IngestionJobLauncher.getSegmentGenerationJobSpec(...).
+#
+# Two phases rather than SegmentCreationAndMetadataPush, because `segmentsTo` is
+# not knowable until the segments exist and startReplaceSegments needs it up
+# front — a combined job leaves nowhere to insert the bracket.
+
+executionFrameworkSpec:
+  name: 'spark'
+  segmentGenerationJobRunnerClassName: 'org.apache.pinot.plugin.ingestion.batch.spark3.SparkSegmentGenerationJobRunner'
+  segmentMetadataPushJobRunnerClassName: 'org.apache.pinot.plugin.ingestion.batch.spark3.SparkSegmentMetadataPushJobRunner'
+  extraConfigs:
+    stagingDir: 's3://revrec-warehouse/pinot/staging'
+
+jobType: ${jobType}
+
+# Written by PublishReportToPinot.writeFullPartition — the COMPLETE partition
+# read back from Iceberg, never the hourly delta.
+inputDirURI: '${staging}'
+includeFileNamePattern: 'glob:**/*.parquet'
+outputDirURI: '${staging}'
+overwriteOutput: true
+
+pinotFSSpecs:
+  - scheme: s3
+    className: org.apache.pinot.plugin.filesystem.S3PinotFS
+    configs:
+      region: 'us-east-1'
+  - scheme: file
+    className: org.apache.pinot.spi.filesystem.LocalPinotFS
+
+recordReaderSpec:
+  dataFormat: 'parquet'
+  className: 'org.apache.pinot.plugin.inputformat.parquet.ParquetRecordReader'
+
+tableSpec:
+  tableName: 'revenue_report_OFFLINE'
+  schemaURI: 'http://pinot-controller:9000/tables/revenue_report/schema'
+  tableConfigURI: 'http://pinot-controller:9000/tables/revenue_report'
+
+# Partition prefix leftmost (the index for computing segmentsFrom), run id to the
+# right of it (keeps segmentsTo names distinct from the segments being replaced).
+#   -> revrec_2026-08_b07_r20260827T1206_0, ..._1, ...
+segmentNameGeneratorSpec:
+  type: 'simple'
+  configs:
+    segment.name.prefix: 'revrec_${period}_b${bucket}_r${runId}'
+    exclude.time.in.segment.name: 'true'
+
+pinotClusterSpecs:
+  - controllerURI: 'http://pinot-controller:9000'
+
+pushJobSpec:
+  pushParallelism: 8
+  pushAttempts: 3
+  pushRetryIntervalMillis: 1000
+  # Segments already sit in the deep store from the generation phase, so the
+  # controller only needs the URI.
+  copyToDeepStoreForMetadataPush: false

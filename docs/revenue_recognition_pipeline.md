@@ -252,14 +252,116 @@ that. Between the two Pinot options:
   ~**20 min** write. This works because under normal workload only a small subset of
   (merchant, month) — the **open period** — has to be overwritten.
 
-## Segment replacement
+## Segment replacement — who decides what gets replaced?
 
-Segment replacement does not rely on a 1:1 segment file match. Pinot's **segment lineage protocol**
-supports **M-to-N atomic swaps** (replacing *M* old segments with *N* new ones). A job carrying
-September and November data replaces only the September and November segments — **October is left
-untouched**.
+**Pinot does not work it out, and you do not hand it a delta.** An offline table has no primary key,
+no upsert and no content-based merge — nothing in Pinot looks at a row and concludes "this is
+September, swap the September segment". Replacement is driven entirely by **segment names**, which
+the *batch job* chooses. Two mechanisms:
 
-The batch job creates the segments; Pinot checks `segmentConfig` and replaces accordingly.
+**1. Name collision (implicit).** Upload a segment named `X`: if `X` already exists it is replaced in
+place, otherwise it is added. Segments absent from the push are left alone. This is the real reason a
+job carrying September + November data leaves **October untouched** — not because Pinot inspected the
+data, but because the job emitted no segment named like October's. Limitation: strictly 1-to-1, so it
+cannot change how many segments a period is made of.
+
+**2. Segment lineage (explicit).** `startReplaceSegments(segmentsFrom, segmentsTo)` → upload →
+`endReplaceSegments`. **You supply both lists.** Pinot's contribution is *atomicity*, not the diff:
+readers see either the old set or the new set, never a mixture and never a gap. That is what makes
+**M-to-N** possible — 3 old segments retired by 5 new ones — which name collision cannot express, and
+which matters here because `maxNumRecordsPerSegment` lets the segment count for a
+`(merchant, period)` grow or shrink as its row count changes.
+
+### How arbitrary is M-to-N?
+
+Fully arbitrary. `segmentsFrom` and `segmentsTo` are independent lists — no cardinality relationship,
+and no requirement that the new segments cover the same time range, partition or row count as the old
+ones. Either list may be empty: empty `segmentsFrom` is an atomic bulk **add**, empty `segmentsTo` an
+atomic bulk **delete**.
+
+What Pinot validates is narrow:
+
+- every name in `segmentsFrom` must currently exist in that table;
+- names in `segmentsTo` must not already exist;
+- both lists belong to a single table;
+- no other **in-progress** lineage entry may overlap your `segmentsFrom` (`forceCleanup=true` revokes
+  a stale one).
+
+What it does **not** validate is correctness. Pinot never checks that `segmentsTo` contains the rows
+that were in `segmentsFrom`. Hand it a `segmentsTo` missing half the data and the swap succeeds —
+atomically and silently. The guarantee is **atomicity, not conservation**, which is why the rebuild
+must read the complete partition back out of Iceberg rather than trusting the swap to protect it.
+
+> **Chunk large swaps.** A lineage entry lives in a single ZooKeeper znode holding both name lists. A
+> full whale recovery (~5 100 old + ~5 100 new names) runs to several hundred KB against ZK's 1 MB
+> default `jute.maxbuffer` — measure it rather than assume the ceiling, but design around it now:
+> issue **one lineage transaction per accounting period** rather than one for the whole merchant.
+> That trades global atomicity for per-period atomicity, which is the right boundary for an accounting
+> ledger anyway, since the period is already the unit that closes.
+
+### The delta trap
+
+Pushing only the changed rows as a **new** segment name makes Pinot **append** it. Offline tables do
+no deduplication, so the old rows and the new rows are both served — silent double-counting in an
+accounting ledger.
+
+So the delta's only job is to identify **which** partitions are dirty. What gets pushed is always a
+**full rebuild** of those partitions:
+
+1. the hourly Spark run `MERGE INTO`s Iceberg, and therefore knows the set of
+   `(merchant, accounting_period)` it touched;
+2. for each dirty pair, read the **complete** partition back out of Iceberg — not the delta;
+3. build segments from it (record-count split), naming them so the name encodes the partition key;
+4. list the table's current segments from the controller and filter by that name prefix →
+   `segmentsFrom`;
+5. `startReplaceSegments` → upload → `endReplaceSegments`.
+
+> **Consequence: the segment naming scheme is load-bearing.** It is the only index you have for
+> *"which existing segments cover this `(merchant, period)`"* — Pinot will not answer that from the
+> data. If the name does not encode the partition key, step 4 has no cheap answer and you are reduced
+> to rewriting the table.
+
+### Which APIs — and is a thin Java layer needed?
+
+Three controller REST calls bracket the push. Verify exact paths and parameters against the Swagger
+on your own controller (`/help`) — these drift between versions:
+
+| Step | Call |
+|---|---|
+| find what to retire | `GET /segments/{table}?type=OFFLINE` → filter by name convention → `segmentsFrom` |
+| open the transaction | `POST /segments/{table}/startReplaceSegments?type=OFFLINE&forceCleanup=true`<br>body `{"segmentsFrom":[…],"segmentsTo":[…]}` → returns `segmentLineageEntryId` |
+| upload | push each new segment (metadata push, below); uploaded segments stay **unrouted** until the transaction closes |
+| commit | `POST /segments/{table}/endReplaceSegments?type=OFFLINE&segmentLineageEntryId={id}` |
+| abort | `POST /segments/{table}/revertReplaceSegments?type=OFFLINE&segmentLineageEntryId={id}` |
+
+**Use metadata push, not tar push.** At this segment size, do not stream tarballs through the
+controller. Pinot's Spark runners (`SparkSegmentGenerationJobRunner` +
+`SparkSegmentMetadataPushJobRunner`, with `pushJobSpec.pushMode: METADATA`) have Spark write segments
+straight to the deep store and send the controller only metadata plus a download URI.
+
+**Do not use `consistentDataPush`.** Pinot ships a consistent-push feature
+(`batchIngestionConfig.consistentDataPush: true`) that wraps a push in the lineage protocol
+automatically — but its semantics are *whole-table*: `segmentsFrom` becomes every segment currently in
+the table. For targeted partial replacement that is catastrophic, deleting every partition absent from
+this push. It is built for full-dataset refreshes, which this is not.
+
+So a **thin wrapper is genuinely needed** — but it is orchestration, not Java as such: compute
+`segmentsFrom`, bracket the push with start/end, revert on failure. On the order of 100 lines. Put it
+where the pipeline is already driven — an **Airflow (Python) operator** is the simplest fit for a
+Spark 3.3 + Airflow 2 stack; a Java/Scala helper only earns its place if the swap should live inside
+the Spark driver.
+
+> **Worked example:** [`docs/examples/pinot-segment-replace/`](examples/pinot-segment-replace/README.md)
+> — the Spark/Scala publish job, the lineage-swap helper and the templated job spec.
+
+**Make it crash-safe.** If the job dies between start and end, the entry is left `IN_PROGRESS`, the
+new segments are never routed, and the old data keeps serving — a safe failure. The next run clears it
+via `forceCleanup=true`, and the failure path should call `revertReplaceSegments` explicitly rather
+than relying on that.
+
+What Pinot *does* decide by itself is only reorganisation, never staleness: minion tasks such as
+`MergeRollupTask` (and `UpsertCompactionTask` on realtime upsert tables) compact and merge segments
+in the background, but they never determine which of your data is superseded.
 
 ```yaml
 # jobSpec.yaml — enforces a maximum row count per output segment file

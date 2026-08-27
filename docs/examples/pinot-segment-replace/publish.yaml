@@ -1,0 +1,53 @@
+# Job configuration for PublishReportToPinot.
+#
+# Split of responsibility, deliberately:
+#   jobspec.yaml  -> Pinot's OWN spec, read by the ingestion runners
+#                    (pushJobSpec: parallelism, retries, metadata-push mode).
+#   publish.yaml  -> this job's config, read by our code: what to publish, how to
+#                    lay it out, and how the lineage swap behaves.
+# Nothing operational should need a recompile.
+
+source:
+  icebergTable: 'finance.report'
+  # Watermark: the snapshot published last run. The delta between it and current
+  # names which partitions are dirty — it is never the data that gets pushed.
+  # Advanced only after a partition commits successfully.
+  lastPublishedSnapshotId: null   # supplied by the scheduler per run
+
+layout:
+  # Must equal segmentPartitionConfig.numPartitions in the Pinot table config.
+  # Changing it invalidates every existing segment name and forces a full rebuild.
+  numBuckets: 32
+  # Files per partition -> roughly the segment count, together with
+  # maxNumRecordsPerSegment in the table config.
+  filesPerPartition: 8
+  stagingBase: 's3://revrec-warehouse/pinot/segments'
+
+pinot:
+  controllerUri: 'http://pinot-controller:9000'
+  rawTableName: 'revenue_report'
+  tableType: 'OFFLINE'
+  # Pinot's ingestion spec, templated per partition and driven twice.
+  jobSpecFile: 'jobspec.yaml'
+
+# How the segment lineage swap behaves.
+swap:
+  # Revokes a stale IN_PROGRESS entry left behind by a crashed run. Safe: an
+  # uncommitted entry never routes, so the old segments were still serving.
+  forceCleanup: true
+
+  # Explicitly revert on push failure rather than leaving the next run's
+  # forceCleanup to reap the entry.
+  revertOnFailure: true
+
+  # One transaction per partition. 'period' batches a whole accounting period.
+  # Never widen this to the entire run: segmentsFrom/segmentsTo live in a single
+  # ZooKeeper znode, and a whale merchant's history would put ~10k segment names
+  # into one entry, against ZK's 1MB default jute.maxbuffer.
+  transactionScope: 'partition'   # partition | period
+
+  # Pinot guarantees atomicity, NOT conservation: it never checks that segmentsTo
+  # covers the rows in segmentsFrom, so a short list is a silent delete. Refuse
+  # the shapes that would be one. Turn these off only for a deliberate purge.
+  refuseEmptySegmentsTo: true
+  refuseOverlappingLists: true
