@@ -50,6 +50,16 @@ every diagram is also indexed in [`diagrams/README.md`](../diagrams/README.md).
 in the original notes. Problem 33 was labelled "B1" and 34/35 as "B2"/"B3" in the source,
 likely a second batch — renumbered here as 33-35 for continuity.*
 
+## Cheat sheets
+
+Quick-reference tables kept alongside the appendix, transcribed from the *HLD quick cheat
+sheet* spreadsheet:
+
+- [Isolation levels](../appendix/isolation-levels.md) — the four levels, the anomaly matrix,
+  which level each use case needs, and a decision tree
+- [Database decision list](../appendix/database-decision-list.md) — which database fits which
+  workload, including a [primary-store map of every problem below](../appendix/database-decision-list.md#problem-set-database-map)
+
 ## Related
 
 - [LLD problems](../lld/README.md)

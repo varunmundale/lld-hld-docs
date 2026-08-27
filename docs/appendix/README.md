@@ -48,6 +48,21 @@ and the [reference table](lld.md#reference-table-from-embedded-image):
 [requirements](lld.md#requirements) and the naive per-task lock/wait approach, then the
 [better approach](lld.md#better-approach) using a `remainingDeps` counter.
 
+## Cheat sheets
+
+*From the `HLD quick cheat sheet` spreadsheet — one file per tab.*
+
+- **[Isolation levels](isolation-levels.md)** — [the four levels](isolation-levels.md#a-the-four-levels),
+  [anomaly matrix](isolation-levels.md#b-anomaly-matrix), [the four anomalies](isolation-levels.md#c-the-four-anomalies),
+  [picking a level by use case](isolation-levels.md#d-picking-a-level-by-use-case),
+  [decision tree](isolation-levels.md#e-decision-tree)
+- **[Database decision list](database-decision-list.md)** — workloads that push teams onto
+  distributed SQL, plus the [best-suited database](database-decision-list.md#best-suited-database)
+  per workload, [use cases the sheet misses](database-decision-list.md#use-cases-the-sheet-misses),
+  a [database map of every HLD problem](database-decision-list.md#problem-set-database-map),
+  [the candidates](database-decision-list.md#the-candidates) compared, and
+  [when you don't need distributed SQL](database-decision-list.md#when-you-dont-need-distributed-sql)
+
 ## Related
 
 - [HLD problems](../hld/README.md)

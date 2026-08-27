@@ -23,7 +23,7 @@ Not part of either problem set — kept on their own because there is no matchin
 docs/
   hld/         one file per HLD problem, NN-slug.md   + README.md index
   lld/         one file per LLD problem, NN-slug.md   + README.md index
-  appendix/    hld.md, lld.md                          + README.md index
+  appendix/    hld.md, lld.md, cheat sheets            + README.md index
   diagrams/    PNG renders, excalidraw/ scene sources  + README.md index
 ```
 
