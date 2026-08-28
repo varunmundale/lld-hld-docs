@@ -60,8 +60,27 @@ and the [reference table](lld.md#reference-table-from-embedded-image):
   distributed SQL, plus the [best-suited database](database-decision-list.md#best-suited-database)
   per workload, [use cases the sheet misses](database-decision-list.md#use-cases-the-sheet-misses),
   a [database map of every HLD problem](database-decision-list.md#problem-set-database-map),
-  [the candidates](database-decision-list.md#the-candidates) compared, and
+  [the candidates](database-decision-list.md#the-candidates) compared,
+  [key design per store](database-decision-list.md#key-design-per-store) — sharding,
+  clustering and primary keys store by store, with the anti-patterns each one punishes — and
   [when you don't need distributed SQL](database-decision-list.md#when-you-dont-need-distributed-sql)
+
+## Playbooks
+
+*Not from the notebooks or the spreadsheet — assembled from the patterns the problem set
+keeps reaching for.*
+
+- **[Scaling strategies](scaling-strategies.md)** — [caching](scaling-strategies.md#a-caching)
+  (layers, read/write patterns, invalidation, eviction, and the four failure modes that only
+  appear under load), [sharding](scaling-strategies.md#b-sharding) (the six strategies,
+  consistent hashing, resharding without downtime, and what sharding breaks),
+  [load balancing](scaling-strategies.md#c-load-balancing) (L4 vs L7, the algorithms,
+  websocket stickiness, health checks, overload protection),
+  [scaling triggers](scaling-strategies.md#d-scaling-triggers--when-one-machine-is-actually-done)
+  (concrete thresholds against one 8 vCPU / 32 GB box — the utilisation knee, per-resource and
+  per-database triggers, trigger lead time, and the anti-triggers), plus
+  [the escalation ladder](scaling-strategies.md#e-the-escalation-ladder) and a
+  [problem-set map](scaling-strategies.md#f-problem-set-map)
 
 ## Related
 

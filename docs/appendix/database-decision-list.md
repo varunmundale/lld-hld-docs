@@ -8,6 +8,7 @@ spreadsheet, `Database decision-list` tab. Everything after it is added, not fro
 - [Use cases the sheet misses](#use-cases-the-sheet-misses) — nine more patterns from the problem set
 - [Problem-set database map](#problem-set-database-map) — every HLD problem, its primary store, and the reasoning
 - [The candidates](#the-candidates) — fifteen stores compared
+- [Key design per store](#key-design-per-store) — partition, clustering and primary keys, store by store
 - [When you don't need distributed SQL](#when-you-dont-need-distributed-sql)
 
 Workloads that push teams onto distributed SQL (Spanner / CockroachDB / TiDB / YugabyteDB
@@ -273,6 +274,350 @@ interesting question is the data structure, not the store. Four do imply persist
 | **Iceberg on S3** | Lakehouse table format | Snapshot isolation | Object-store durability | Batch upserts, time travel, schema evolution over cheap storage. |
 | **Kafka** | Durable log | — (ordered per partition) | Sync ISR replication | The system of record for events; replay, fan-out, and back-pressure. |
 | **S3** | Object storage | — | 11 nines durability | Bytes: media, backups, archives, lakehouse files. Never file bytes in a DB. |
+
+## Key design per store
+
+Picking the database is the easy half. The half that decides whether the design survives
+production is **which columns become the key** — because in almost every store the key is
+not just a uniqueness constraint, it is the *physical layout*: which node the row lands on,
+which rows are read together, and which query is a single seek versus a fan-out to every
+shard in the cluster.
+
+The vocabulary collides across stores, which is most of why this is confusing. Underneath,
+every store is asking at most three questions:
+
+| | Question | Called | Get it wrong and |
+|---|---|---|---|
+| **1. Identity** | What makes this row unique? | primary key, `_id`, document key | duplicates appear silently (stores without uniqueness), or writes upsert over each other |
+| **2. Placement** | Which node / file / segment does it live on? | partition key, shard key, distribution column, routing, hash key | one node takes all the traffic, or every query fans out to all of them |
+| **3. Order** | How are co-located rows sorted on disk? | clustering key, sort key, `ORDER BY`, sorted column | "last N" becomes a full partition scan and compression collapses |
+
+A single-node PostgreSQL lets you ignore #2 entirely, which is why it is the default —
+and why sharding it later is the hardest retrofit in the system. Cassandra and DynamoDB
+force you to answer all three before you can create a table, which feels hostile and is
+actually the honest version.
+
+### Vocabulary map
+
+| Store | Identity | Placement (co-location) | Order within placement |
+|---|---|---|---|
+| **PostgreSQL** (single node) | `PRIMARY KEY` | — none, one node | heap is unordered; index order only |
+| **PostgreSQL** (declarative partitioning) | PK **must contain** the partition key | `PARTITION BY RANGE/LIST/HASH` | per-partition indexes |
+| **Citus** | PK must include the distribution column | `create_distributed_table(t,'tenant_id')` | per-shard indexes |
+| **CockroachDB / YugabyteDB** | `PRIMARY KEY` — *is* the physical KV sort order | leading PK columns → range/tablet split; `REGIONAL BY ROW` prepends `crdb_region` | trailing PK columns |
+| **Spanner** | `PRIMARY KEY`, sorted | leading PK column + `INTERLEAVE IN PARENT` | trailing PK columns |
+| **TiDB** | clustered PK, or hidden `_tidb_rowid` | region splits by key range; `AUTO_RANDOM` / `SHARD_ROW_ID_BITS` | PK order |
+| **MySQL + Vitess** | clustered PK (secondary indexes carry the PK) | **vindex** on the sharding column | PK order |
+| **DynamoDB** | partition key, or partition + sort key | `hash(partition key)` | sort key |
+| **Cassandra** | `PRIMARY KEY ((partition), clustering…)` — no uniqueness enforcement | `token(partition key)` on the ring | clustering columns, `CLUSTERING ORDER BY` |
+| **MongoDB** | `_id` (globally unique only if it is the shard key prefix) | shard key, hashed or ranged | index order |
+| **Redis** | the key string | `CRC16(key) mod 16384` → slot; `{hashtag}` overrides | ZSET score, or lexicographic |
+| **Kafka** | none — offset within a partition | `murmur2(key) % partitions` | append order (offset) |
+| **Elasticsearch** | `_id` | `hash(_routing ?? _id) % primary_shards` | none by default; `index.sort.field` optional |
+| **Pinot** | none, unless it's an upsert table (then a primary key) | segment partitioning column | one `sortedColumn` per segment |
+| **ClickHouse** | `ORDER BY` tuple (`PRIMARY KEY` is a sparse prefix of it) | `PARTITION BY` on disk; sharding key on the `Distributed` table | `ORDER BY` |
+| **Druid** | none, unless rolling up (then the dimension tuple) | time chunk, then secondary `partitionsSpec` | time, then dimension order |
+| **Iceberg** | identifier fields (for MOR upserts) | `PARTITIONED BY days(ts), bucket(64, id)` — hidden | write sort order |
+| **Prometheus** | series = metric name + full label set | series hash | timestamp, by construction |
+| **S3** | object key | key prefix | lexicographic listing |
+
+---
+
+### PostgreSQL — the key is logical until it isn't
+
+- **Primary key.** Prefer `bigint GENERATED ALWAYS AS IDENTITY`, or **UUIDv7 / ULID** when
+  IDs must be generated client-side. Do *not* make random **UUIDv4** the PK of a large
+  table: inserts scatter across the whole B-tree, so the working set of index pages never
+  fits cache, and every dirtied page triggers a full-page write into the WAL. UUIDv7 is
+  time-ordered, so inserts stay append-like and keep the leaf-page locality. PostgreSQL 18
+  ships `uuidv7()` natively.
+- **Natural keys are fine when they're stable and narrow.** [Bit.ly](../hld/01-bitly-url-shortener.md)
+  keys on `short_code` — a `UNIQUE` constraint *is* the collision check, so there is no
+  read-then-write race to reason about.
+- **The heap is unordered.** Index order is logical; `CLUSTER` is a one-shot rewrite that
+  decays. BRIN indexes only pay off on naturally correlated columns — an append-only
+  `created_at` — where they cost a few kilobytes instead of gigabytes.
+- **Composite index column order:** equality predicates first, the range predicate last,
+  because the scan stops being selective after the first range. `(status, next_run_at)`
+  for the [Job Scheduler](../hld/18-job-scheduler.md)'s "due and not yet succeeded" query,
+  ideally as a partial index `WHERE status <> 'SUCCESS'` so completed history stays out of
+  the index entirely.
+- **Partitioning is for retention, not usually for speed.** `DROP PARTITION` is instant
+  where `DELETE` of a month of rows is hours of vacuum. The catch: the PK must contain the
+  partition key, and pruning only happens when the partition key is in the `WHERE` clause —
+  a query that filters only on `user_id` when you partitioned by month touches every
+  partition.
+- **Citus:** pick **one** distribution column and use it across every co-located table
+  (`tenant_id` is the canonical choice). Joins and foreign keys work only within the same
+  distribution column; small dimension tables become reference tables replicated to every
+  node. The moment two tables need different distribution columns, one of them is going to
+  be scatter-gather forever.
+
+### Distributed SQL (CockroachDB, Spanner, YugabyteDB, TiDB) — the PK is the shard map
+
+These stores keep rows **sorted by primary key** in an underlying KV, and split contiguous
+key ranges into ranges/tablets owned by one leaseholder. That single fact drives every key
+decision:
+
+- **A monotonic PK is a single-node write hotspot.** `SERIAL`, `AUTO_INCREMENT`, `now()`,
+  a Snowflake ID — every insert targets the last range, so a 30-node cluster writes at the
+  speed of one node. Fixes, in rough order of preference:
+  - make the PK's leading column something naturally spread (`user_id`, `account_id`);
+  - prepend a computed bucket: `PRIMARY KEY (crc32(id) % 16, id)`;
+  - CockroachDB `CREATE INDEX … USING HASH WITH (bucket_count = 8)`;
+  - TiDB `AUTO_RANDOM` on the clustered PK, or `SHARD_ROW_ID_BITS` when there isn't one;
+  - Spanner: hash or bit-reverse the key before storing it.
+- **But randomising costs you range scans.** The two goals fight. The resolution is almost
+  always a **composite PK: spread on the leading column, order on the trailing one** —
+  `PRIMARY KEY (customer_id, created_at DESC, id)` spreads writes across customers while
+  keeping "this customer's latest 50" one contiguous seek.
+- **Co-location for transactions.** A transaction touching two rows in the same range is
+  one Raft round; across two ranges it is 2PC. Spanner's `INTERLEAVE IN PARENT` physically
+  nests child rows under the parent; YugabyteDB has colocated tables and tablegroups;
+  CockroachDB dropped interleaving in v21.2, so you get the same effect by giving child
+  tables a PK that shares the parent's prefix. For the
+  [Payment System](../hld/29-payment-system.md), `payments` and `payment_events` sharing a
+  `payment_id` prefix is what keeps the write path a single-range commit.
+- **Every secondary index is another Raft group.** An index lives in its own ranges, so an
+  insert into a table with three indexes is a distributed transaction over four ranges.
+  This is the main reason distributed SQL write throughput disappoints people migrating
+  from PostgreSQL — the schema came along unchanged.
+- **Residency is a key decision.** CockroachDB's `REGIONAL BY ROW` prepends a hidden
+  `crdb_region` column *to the primary index*, so you must be able to derive the region at
+  write time (from the user's home region, not from where the request landed). Rows whose
+  region you can't compute end up in the wrong place and the compliance argument evaporates.
+
+### DynamoDB — you get one access path per key, so design them all up front
+
+- **`PK` alone** for pure point lookups; **`PK` + `SK`** whenever you need "all the X for a
+  Y" — the sort key turns a partition into a range-scannable collection.
+- **Hierarchical sort keys** are the trick that makes one table serve many queries:
+  `SK = "ORG#123#DEPT#7#USER#9"` answers three prefix queries with `begins_with`.
+  Overloaded GSI keys (`GSI1PK`/`GSI1SK` holding different meanings per item type) are the
+  single-table-design version of the same idea.
+- **Hard limits shape the key.** ~3,000 RCU / 1,000 WCU per physical partition, and a 10 GB
+  cap on an item collection once the table has an LSI. Adaptive capacity smooths bursts; it
+  does not save you from one genuinely hot key.
+- **Write sharding for hot keys:** store `PK = "ad#42#" + rand(0..N)` and scatter-gather N
+  reads. This is the same fix as salting a Kafka key, and it is what the
+  [Ad Click Aggregator](../hld/27-ad-click-aggregator.md) needs for a viral ad.
+- **GSI vs LSI:** a GSI is a separate table with its own partitioning and its own
+  throughput, always eventually consistent — and if it throttles, it back-pressures writes
+  to the *base* table. An LSI shares the partition, can be read strongly consistently, must
+  be declared at table creation, and is what imposes the 10 GB collection cap.
+- **TTL** is a first-class expiry attribute; use it rather than a delete sweeper.
+
+### Cassandra — `PRIMARY KEY ((partition), clustering…)`
+
+The one store where getting the key wrong doesn't degrade the system, it *breaks* it.
+
+- **Model the query, not the entity.** One table per access pattern; every read should hit
+  exactly one partition. Denormalise freely — see
+  [query-driven data model](hld.md#data-model-aka-query-driven).
+- **Bound the partition.** Target ≲100 MB and ≲100k rows, and more importantly make it
+  *bounded in time*, because an unbounded partition grows until compaction and repair can't
+  finish. The fix is a bucket in the partition key:
+  `PRIMARY KEY ((chat_id, day), created_at, message_id)`. Choose the bucket width from the
+  write rate, and remember the read side must now query N buckets to cover a range.
+- **Low-cardinality partition keys are hot nodes.** `PARTITION BY country` puts a third of
+  the traffic on whichever node owns `US`.
+- **Clustering columns give you ordering for free:**
+  `WITH CLUSTERING ORDER BY (created_at DESC)` makes "the last 50 messages" a head scan
+  with no sort. This is why [WhatsApp](../hld/10-whatsapp.md) and
+  [FB Live Comments](../hld/19-fb-live-comments.md) fit Cassandra so exactly.
+- **There is no uniqueness constraint.** Two writes with the same primary key are an
+  upsert, last-write-wins by timestamp — so the PK must include enough columns to be
+  genuinely unique (append `message_id`, don't trust `created_at`), and anything requiring
+  a real uniqueness check needs `IF NOT EXISTS`, which costs a Paxos round.
+- **Don't use it as a queue.** Delete-heavy partitions accumulate tombstones that are
+  scanned on every read until `gc_grace_seconds` (default 10 days) passes and compaction
+  runs. TTLs are the supported way to expire data — [WhatsApp](../hld/10-whatsapp.md)'s
+  30-day retention is a TTL, not a delete job.
+- **Secondary indexes are per-node scatter-gather.** Write a second denormalised table
+  instead; that is the whole idiom.
+- **Static columns** hold per-partition metadata (a chat's title) without duplicating it on
+  every row.
+
+### MongoDB — the shard key is close to permanent
+
+- **Choose for cardinality, frequency and monotonicity**: high cardinality, no single
+  dominant value, and *not* increasing. `ObjectId` and timestamps are monotonic, so a
+  ranged shard key on them sends every insert to the max-key chunk.
+- **Hashed vs ranged:** hashed spreads writes perfectly and destroys range queries and
+  targeted routing; ranged preserves locality and risks the hot chunk. The usual answer is
+  a **compound ranged key** — `{tenant_id: 1, created_at: 1}` — which spreads by tenant and
+  keeps a tenant's time range contiguous.
+- **A query without the shard key is a scatter-gather** to every shard, plus a merge on
+  mongos. Every access pattern you care about should carry the key.
+- **Unique indexes must be prefixed by the shard key**, so global uniqueness on any other
+  field is not available once sharded. Resharding exists since 5.0 but it rewrites the
+  collection — treat the choice as a one-way door.
+- The **oplog** is a capped collection ordered by timestamp; that ordering is what makes
+  CDC tailing work in the [Revenue Recognition pipeline](../revenue_recognition_pipeline.md).
+
+### Redis — the key string is the shard key
+
+- **Cluster routing is `CRC16(key) mod 16384`.** Multi-key operations (`MGET`,
+  transactions, Lua scripts) require every key in the same slot, so co-locate deliberately
+  with hash tags: `{user:123}:profile` and `{user:123}:feed` hash on `user:123` only.
+- **Name keys as a path** — `app:entity:id:field` — and keep them short; a hundred million
+  keys carrying 30 wasted bytes each is 3 GB of RAM spent on strings.
+- **Beware the single big key.** A leaderboard `ZSET` with 50 M members lives in one slot
+  on one node, and any O(N) command against it blocks the single-threaded event loop for
+  everyone. Shard [game leaderboards](../hld/34-game-leaderboard.md) by time window or score
+  band and merge the top-K in the application.
+- **The ZSET score is your sort key.** Pack a tie-breaker into the float (score × 2^20
+  minus a timestamp) when equal scores must order deterministically, or use
+  `ZRANGEBYLEX` with equal scores and an encoded member.
+- **Every ephemeral key needs a TTL.** Without one, the eviction policy makes the decision
+  for you — and `noeviction` turns a full instance into write errors. Rate-limit counters,
+  HOLD locks and session tokens should all expire on their own.
+
+### Kafka — the partition key is an ordering contract
+
+- **Ordering exists only within a partition**, so the key must be exactly the entity whose
+  order matters: `chat_id` for messages, `account_id` for ledger events, `payment_id` for a
+  payment's lifecycle. Keying on something coarser (`region`) buys ordering you don't need
+  and throughput you can't get back.
+- **Partition count is close to immutable.** Since the mapping is `hash(key) % partitions`,
+  adding partitions reshuffles every key and breaks per-key ordering across the change.
+  You cannot decrease at all. Over-provision at creation.
+- **A hot key is a hot partition** and there is no way around it except changing the key.
+  For [ad clicks](../hld/27-ad-click-aggregator.md), salt it — `ad_id#rand(0..N)` — and
+  re-aggregate downstream, which is fine precisely because counting is commutative.
+- **Consumer parallelism ≤ partition count.** The partition key therefore also sets your
+  maximum scale-out.
+- **On a compacted topic the key is the identity of the record** — the last value per key
+  survives, which turns the topic into a durable KV snapshot (and means a null key breaks
+  compaction).
+
+### Elasticsearch — routing decides fan-out
+
+- **`hash(_routing ?? _id) % number_of_primary_shards`.** The primary shard count is baked
+  into the modulus, which is why it is fixed at index creation and only changeable by
+  split/shrink/reindex.
+- **Custom routing is the biggest available latency win** for multi-tenant search: routing
+  by `tenant_id` turns a query that visits 20 shards into one that visits one. The cost is
+  skew — one enormous tenant fills one shard — so large tenants usually get an index of
+  their own.
+- **Time-based indices are the partition key for logs.** Roll over daily via a data stream
+  and ILM, then delete whole indices; deleting documents by query is far more expensive.
+- **`index.sort.field`** lets a "top N by timestamp" query terminate early instead of
+  scoring the whole segment.
+- **Parent-join requires routing** to keep parent and child on one shard — which is really
+  a restatement of the rule that Elasticsearch cannot join across shards.
+
+### OLAP: Pinot, Druid, ClickHouse
+
+All three trade the same way: the sort key gives you both pruning *and* compression,
+because sorted columns of low-cardinality values compress to almost nothing.
+
+- **ClickHouse.** `ORDER BY` is the real key — the sparse primary index is a prefix of it.
+  Order **lowest-cardinality and most-filtered first, highest-cardinality last**:
+  `ORDER BY (tenant_id, event_type, ts)`. `PARTITION BY` should be *coarse*
+  (`toYYYYMM(ts)`); each insert creates at least one part per partition, so fine-grained
+  partitioning produces a merge storm and "too many parts" errors. On a `Distributed` table
+  the sharding key should be `cityHash64(tenant_id)`, so each tenant's aggregation finishes
+  locally instead of shuffling.
+- **Pinot.** Pick the **partition column** that appears in every query's `WHERE`
+  (`ad_id`, `video_id`) so the broker can prune segments; declare one **`sortedColumn`**
+  per segment for range scans and compression; the **time column** drives segment pruning
+  and retention. Star-tree indexes pre-aggregate the dimension combinations you actually
+  group by. Upsert tables need a primary key *and* the upstream Kafka topic partitioned by
+  that same key — Pinot resolves upserts per partition, so a mismatched partitioning
+  silently produces duplicates. See [Pinot architecture](hld.md#pinot-architecture) and the
+  [YouTube Top-K](../hld/22-youtube-top-k.md) design.
+- **Druid.** Segment granularity is a time bucket first; secondary partitioning
+  (`partitionsSpec`, hashed or ranged on a dimension) is what stops one hour from becoming
+  one giant segment. When rollup is on, the **dimension tuple is the key** — rows sharing
+  it collapse — so including a high-cardinality dimension like `request_id` disables the
+  compression you turned rollup on for.
+
+### Iceberg — hidden partitioning, and the small-file trap
+
+- **`PARTITIONED BY days(event_ts), bucket(64, account_id)`.** Partitioning is hidden:
+  queries filter on `event_ts` and Iceberg derives the partition, so you never add a
+  synthetic `dt` column and never depend on callers remembering to filter on it.
+- **Bucket the key you merge on.** `MERGE INTO … ON t.account_id = s.account_id` only has
+  to rewrite the buckets that were touched, which is what keeps an hourly upsert job
+  bounded — the mechanism behind the
+  [Revenue Recognition pipeline](../revenue_recognition_pipeline.md)'s Iceberg layer.
+- **Sort order inside files** drives min/max column statistics, and therefore file pruning.
+- **Partition evolution is supported** — old data keeps the old spec — which is the main
+  reason to prefer Iceberg over Hive-style directory partitioning.
+- **Over-partitioning is the classic failure:** hourly × a high-cardinality column produces
+  millions of tiny files, and query planning starts costing more than scanning. Target
+  file sizes in the hundreds of megabytes and compact.
+
+### Prometheus and time-series — cardinality *is* the key
+
+- A **series is the metric name plus the full label set**; each unique combination gets its
+  own memory and index entry. Every label multiplies: 1 label with 10k values times another
+  with 100 is a million series.
+- **Never put an unbounded value in a label** — `user_id`, `request_id`, email, full URL
+  path. That is the single failure mode that takes down monitoring, and it happens in
+  [metrics systems](../hld/30-metrics-monitoring.md) far more often than any storage issue.
+- Timestamp is the clustering key by construction; retention and downsampling are the only
+  other knobs.
+
+### S3 — the key prefix is the partition
+
+- Prefixes auto-scale (~3,500 write / 5,500 read requests per second per prefix), so
+  random hash prefixes are no longer needed for throughput — that advice is a decade out of
+  date.
+- What the key still buys you is **listing and pruning**:
+  `table/dt=2026-08-28/hour=03/part-0001.parquet` makes a day's data one prefix scan and
+  lets every query engine skip the rest. Listing is lexicographic, so design the key so
+  that the common query is a prefix.
+
+---
+
+### Anti-patterns, across every store
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| One node at 100% while the cluster idles | monotonic key on a range-sharded store (CRDB, Spanner, TiDB, ranged Mongo) | composite PK with a spread leading column, or a hash bucket prefix |
+| Write throughput collapses as the table grows | random UUIDv4 PK — no insert locality, WAL/compaction amplification | UUIDv7 / ULID, or a `bigint` identity |
+| One partition owns a third of the data | low-cardinality partition key (`country`, `status`, `tenant` in a whale-heavy tenancy) | add a discriminating column, or give the whale its own index/table |
+| Reads get slower every week, repairs never finish | unbounded partition (Cassandra), unbounded item collection (Dynamo) | bucket the partition key by time; TTL the tail |
+| Every query touches every shard | the access pattern doesn't include the placement key | a second denormalised table, a GSI, or custom routing — not a secondary index |
+| Duplicate rows nobody can explain | assuming uniqueness on a store that doesn't enforce it (Cassandra, Pinot without upserts, ES `_id` collisions) | put real uniqueness in the key, or enforce it upstream in a store that has constraints |
+| "Too many parts" / query planning dominates runtime | over-partitioning (ClickHouse `PARTITION BY` day, Iceberg hourly × high cardinality) | coarsen the partition, compact aggressively |
+| Writes are slower than the benchmark promised | one Raft group per secondary index on distributed SQL | drop indexes you don't query; cover the query with the PK order instead |
+| Monitoring falls over before the service does | unbounded label values in a time-series store | move the high-cardinality dimension to logs or an OLAP store |
+
+### Answering this in an interview
+
+Four sentences, in this order, works for any store:
+
+1. **The access pattern** — "the dominant read is *the last 50 messages in a chat*".
+2. **The placement key** — "so I partition on `chat_id`, bucketed by day to bound the
+   partition".
+3. **The order key** — "clustered by `created_at DESC` so the read is a head scan, no sort".
+4. **The failure mode you're avoiding** — "and I'm not partitioning on `user_id` alone
+   because a group chat with a million members would be an unbounded partition".
+
+Naming the failure mode is what separates a memorised schema from a designed one.
+
+### Worked keys from the problem set
+
+| Problem | Store | Key | Reasoning |
+|---|---|---|---|
+| [Bit.ly](../hld/01-bitly-url-shortener.md) | PostgreSQL | PK `short_code` | the uniqueness constraint *is* the collision check; lookups are point reads on the PK |
+| [Dropbox](../hld/02-dropbox.md) | PostgreSQL | PK `(file_id, user_id)` on `UserFileAccess` + index on `(user_id, file_id)` | two access paths — "users of a file" and "files of a user" — need two orderings of the same pair |
+| [TicketMaster](../hld/05-ticketmaster.md) | PostgreSQL + Redis | PK `(event_id, seat_id)`; Redis `hold:{event_id}:{seat_id}` with TTL | booking rows co-locate per event; the hold is an expiring key, deliberately not a row |
+| [Instagram](../hld/06-instagram.md) | Cassandra | `((user_id, month), created_at DESC, post_id)` | one partition per user-month keeps it bounded; feed reads are a head scan |
+| [WhatsApp](../hld/10-whatsapp.md) | Cassandra | `((user_id, day), created_at DESC, message_id)`, TTL 30d | per-user outbox, ordering only within a chat, retention as a TTL rather than deletes |
+| [Job Scheduler](../hld/18-job-scheduler.md) | PostgreSQL | PK `(job_id, run_at)`; partial index `(next_run_at) WHERE status <> 'SUCCESS'` | the hot query is a range scan over pending work; completed history stays out of the index |
+| [News Aggregator](../hld/20-news-aggregator.md) | Cassandra | `((location, user_id), rank)` | the notes' own key — the feed is precomputed, so a read is one partition, already ordered |
+| [YouTube Top-K](../hld/22-youtube-top-k.md) | Kafka → Pinot | Kafka key `video_id`; Pinot partition `video_id`, sorted column `window_start` | per-video ordering into Flink; segment pruning by video on the serving side |
+| [Uber](../hld/23-uber.md) | Redis + distributed SQL | Redis geohash cell as key; rides PK `(rider_id, ride_id)` | locations shard by geography because queries are "who's near me"; rides shard by rider |
+| [Ad Click Aggregator](../hld/27-ad-click-aggregator.md) | Kafka → OLAP | Kafka key `ad_id#rand(0..N)`; OLAP `ORDER BY (ad_id, minute)` | salting because a viral ad is a hot partition, and counting is commutative so it re-merges |
+| [Payment System](../hld/29-payment-system.md) | Distributed SQL | PK `(payment_id)`, events PK `(payment_id, seq)`; idempotency key unique index | sharing the prefix keeps payment and its events in one range → one-round commit |
+| [Game Leaderboard](../hld/34-game-leaderboard.md) | Redis | `lb:{game_id}:{window}` ZSET, score = points | window in the key so an expiring leaderboard is a `DEL`, and no key grows forever |
+
+
+---
 
 ## When you don't need distributed SQL
 
