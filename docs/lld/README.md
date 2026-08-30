@@ -24,6 +24,7 @@ One file per problem.*
 | 14 | [Inventory Management](14-inventory-management.md) |  |  |
 | 15 | [Build a Rule Engine](15-rule-engine.md) | ✓ |  |
 | 16 | [Design Spreadsheet with Formulas](16-spreadsheet-with-formulas.md) | ✓ |  |
+| 17 | [Order Management System](17-order-management-system.md) | ✓ | — *added, not from the notebook* |
 
 *Problem numbering resets partway through the notebook (pages restart at "1" around
 Connect Four, then continue "2, 4, 5, 8, 9, 10..." from Amazon Locker onward) — renumbered
@@ -204,6 +205,22 @@ actually probe:
   intermediate state is usually the answer to the follow-up.
 - **Say what is out of scope, out loud.** Every worked file has an out-of-scope list; scoping
   is graded, silence is not.
+
+### 17. [Order Management System](17-order-management-system.md)
+*Added — not from the notebook.* Drive an order through payment → allocation → fulfilment →
+delivery, where every lifecycle input arrives as an **event from a system you don't control**
+(payment, inventory, fraud, WMS, carrier), at-least-once and out of order. The design is a
+**table-driven state machine**: `Map<(State, EventType), Transition>` with every transition
+split into a pure **guard**, an aggregate-only **action**, and an **effect** that returns
+commands instead of calling anyone. `Order` has no `setState` — `handle(event)` is the only
+way in, and every change appends an immutable `OrderTransition`.
+**The load-bearing idea:** an inbound event has **four** outcomes, not two — `APPLIED`,
+`IGNORED` (duplicate or already past it — normal, don't alert), `DEFERRED` (valid later, two
+systems raced — park and replay), `REJECTED` (genuinely impossible — DLQ). Also: an explicit
+`CANCELLING` state because compensation is asynchronous and can fail; a transactional
+**outbox** so side effects fire exactly once per transition; dedupe as a unique constraint on
+`(source, eventId)`; and ordering by the state machine rather than by `occurredAt`, because
+clocks on other people's servers aren't comparable.
 
 ## Related
 
