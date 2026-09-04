@@ -10,12 +10,14 @@ original whiteboard diagrams rendered alongside.
 | **[Appendix](appendix/README.md)** | [HLD](appendix/hld.md) — consistency models, Elasticsearch, Cassandra, Kafka, Redis, Iceberg, Pinot | [LLD](appendix/lld.md) — concurrency, task execution engine |
 | **[Playbooks](appendix/README.md#playbooks)** | [Scaling strategies](appendix/scaling-strategies.md) — caching, sharding, load balancing | [Database decision list](appendix/database-decision-list.md) — which store, and which keys |
 | **[Diagrams](diagrams/README.md)** | 19 renders + editable `.excalidraw` sources | |
+| **[Zamp](zamp/README.md)** | [R2 system design round](zamp/01-r2-system-design-round.md) — format, likely briefs, interviewers | company-specific prep |
 
 ## Standalone designs
 
 Not part of either problem set — kept on their own because there is no matching problem:
 
 - [Revenue Recognition — end to end](revenue_recognition_pipeline.md) — Mongo oplog → Flink → SQS → Iceberg → Pinot / DataStory
+  - [worked example](revenue_recognition_walkthrough.md) — a Netflix subscription through journal → ledger → revenue recognition entries → period summary
 - [Database Version Control](database_version_control.md) — branch, diff, validate and commit a schema like git
 
 ## Layout
@@ -26,6 +28,7 @@ docs/
   lld/         one file per LLD problem, NN-slug.md   + README.md index
   appendix/    hld.md, lld.md, cheat sheets            + README.md index
   diagrams/    PNG renders, excalidraw/ scene sources  + README.md index
+  zamp/        company-specific interview prep         + README.md index
 ```
 
 Every diagram ships as a PNG plus its `.excalidraw` scene under

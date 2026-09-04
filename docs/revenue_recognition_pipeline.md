@@ -5,6 +5,10 @@ matching problem in the [HLD problem set](hld/README.md).*
 
 *Detail below sourced from the [Stripe Experience notes](https://docs.google.com/document/d/1F0KVioGjgqMCm_sniEwkoGpbFus42kduqZZGJj_f3n4/edit?tab=t.0).*
 
+> **Worked example:** [Revenue Recognition — worked example](revenue_recognition_walkthrough.md)
+> — a Netflix subscription traced through journal → ledger → revenue recognition entries → period
+> summary, with Stripe's two period-summary formulas worked through.
+
 ![Revenue Recognition — end-to-end pipeline](diagrams/revenue-recognition.png)
 
 <sub>Whiteboard source — [open in Excalidraw](https://excalidraw.com/#json=RzulstEkMllbVQ9jA4rOD,0ZAuh-n8lQKxbVTM_SXBcg) · offline copy: [`diagrams/excalidraw/revenue-recognition.excalidraw`](diagrams/excalidraw/revenue-recognition.excalidraw)</sub>
@@ -166,6 +170,9 @@ Denormalized reports:
 
 > Design question: the reporting entries should be buildable from the **journal layer alone**
 > (while handling out-of-order events).
+
+Worked through row by row in the
+[end-to-end example](revenue_recognition_walkthrough.md#stage-3--revenue-recognition-entries).
 
 ## Why not serve straight out of Pinot?
 
