@@ -3,7 +3,6 @@ package com.revrec.pinot
 import org.yaml.snakeyaml.Yaml
 
 import java.net.URI
-import scala.jdk.CollectionConverters._
 
 /**
  * Everything operational, loaded from `publish.yaml` — nothing here should need

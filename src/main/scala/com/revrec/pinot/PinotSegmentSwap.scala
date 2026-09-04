@@ -2,14 +2,11 @@ package com.revrec.pinot
 
 import org.apache.pinot.common.restlet.resources.StartReplaceSegmentsRequest
 import org.apache.pinot.common.utils.FileUploadDownloadClient
-import org.apache.pinot.plugin.ingestion.batch.spark3.{
-  SparkSegmentGenerationJobRunner, SparkSegmentMetadataPushJobRunner
-}
+import org.apache.pinot.plugin.ingestion.batch.spark3.{SparkSegmentGenerationJobRunner, SparkSegmentMetadataPushJobRunner}
 import org.apache.pinot.spi.ingestion.batch.IngestionJobLauncher
 import org.apache.pinot.spi.ingestion.batch.spec.SegmentGenerationJobSpec
 import org.apache.spark.sql.SparkSession
 
-import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 /**

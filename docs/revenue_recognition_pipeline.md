@@ -358,7 +358,7 @@ where the pipeline is already driven — an **Airflow (Python) operator** is the
 Spark 3.3 + Airflow 2 stack; a Java/Scala helper only earns its place if the swap should live inside
 the Spark driver.
 
-> **Worked example:** [`docs/examples/pinot-segment-replace/`](examples/pinot-segment-replace/README.md)
+> **Worked example:** [`src/main/scala/com/revrec/pinot/`](../src/main/scala/com/revrec/pinot/README.md)
 > — the Spark/Scala publish job, the lineage-swap helper and the templated job spec.
 
 **Make it crash-safe.** If the job dies between start and end, the entry is left `IN_PROGRESS`, the

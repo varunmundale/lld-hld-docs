@@ -1,7 +1,6 @@
 package com.revrec.pinot
 
 import org.apache.pinot.segment.spi.partition.MurmurPartitionFunction
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 /**

@@ -1,6 +1,6 @@
 # Demo — targeted M-to-N segment replacement, Spark/Scala
 
-Companion to [Revenue Recognition — End to End](../../revenue_recognition_pipeline.md#which-apis--is-a-thin-java-layer-needed).
+Companion to [Revenue Recognition — End to End](../../../../../docs/revenue_recognition_pipeline.md#which-apis--is-a-thin-java-layer-needed).
 Replaces the Pinot segments backing **one `(accounting_period, merchant_bucket)` partition** — the
 unit the hourly run dirties — leaving every other partition untouched.
 

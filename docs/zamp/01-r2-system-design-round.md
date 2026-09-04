@@ -52,8 +52,10 @@ improvements.
 ## B) The company, in the terms the design will use
 
 Zamp is an agentic operating system for finance and back-office work — AI agents that
-learn a finance process and run it end to end. Customers are Fortune 500s and global
-banks, which makes multi-tenancy, auditability and encryption first-class, not garnish.
+learn a finance process and run it end to end. Their own careers page says 50+ top global
+organizations and banks, **including DoorDash, Uber and Stripe**; $22M seed in 2022 from
+Sequoia, plus Dara Khosrowshahi and Tony Xu. Customers of that shape make multi-tenancy,
+auditability and encryption first-class, not garnish.
 
 Product surface, as advertised:
 
@@ -66,9 +68,20 @@ Product surface, as advertised:
 Their own framing of the audit problem is worth borrowing verbatim in the round:
 auditors do not object to automation, they object to automation that cannot show its work.
 
-**Stack**, from the backend JD: Go, Redis, Kafka/Pub-Sub, Kubernetes, job schedulers —
-and the JD names *Gang of Four principles, SOLID, and DRY* outright. Expect the Phase 3
-deep dive to want real interfaces and a class model, not just a table of columns.
+**Stack**, quoted from the live Senior Software Engineer — Backend posting: *"Golang,
+Redis, message queues like Kafka and Pubsub, Kubernetes (K8s), and job schedulers"* — and
+the same posting names *"Gang of Four principles, SOLID, and DRY"* outright, twice. Expect
+the Phase 3 deep dive to want real interfaces and a class model, not just a table of
+columns.
+
+Note what is **not** in the backend JD: no Temporal, no named datastore, no Postgres. The
+only Zamp posting that mentions a workflow engine is a **Solution Engineer** role — a
+customer-facing, Python-side role — which listed *"workflow engines like Temporal (or
+similar) to orchestrate long-running tasks with retries, checkpoints, and timeouts."* That
+posting has since been delisted, so treat it as a signal about the solutions layer, not as
+confirmation that core backend runs on Temporal. Their backend JD says "job schedulers,"
+which suggests durable execution is at least partly built in-house on Go + Kafka + Redis.
+Do not walk in asserting they use Temporal — ask.
 
 **Integration surface**, from the marketing site: ERP, inbox, spreadsheets, and
 browser-based portals. Note the last one — some connectors are screen-scrapers, not APIs.
@@ -148,10 +161,20 @@ pay*. Idempotency here is money, not hygiene.
 
 Deep dive is **durable execution**: step DAG persisted, retry with backoff, idempotency
 key per side-effecting tool call, steps that suspend for days awaiting human approval,
-tool/connector abstraction, compensating actions on failure. Effectively "build Temporal,
-and then justify why you didn't just buy Temporal" — have the buy-vs-build answer ready.
+tool/connector abstraction, compensating actions on failure.
 
-Closest existing notes: [Task Scheduler](../lld/01-task-scheduler.md),
+This is the durable-execution problem, so **have the buy-vs-build answer ready** — what
+Temporal/Cadence gives you, what it costs (operational burden, a workflow-determinism
+programming model, versioning pain on long-running executions), and when rolling your own
+scheduler on Kafka + Postgres is the right call. Their backend stack lists *job schedulers*
+rather than a named workflow engine, and a delisted Solution Engineer posting mentioned
+Temporal "or similar" — so ask which side of that line they landed on rather than assuming.
+
+Closest existing notes: **[Durable Execution Engine](../hld/36-durable-execution-engine.md)**
+— written as the deep dive for this brief, including
+[where it fits in agentic systems](../hld/36-durable-execution-engine.md#c-agentic-systems--the-strongest-fit-and-the-sharpest-edges)
+and the [pitfalls](../hld/36-durable-execution-engine.md#pitfalls) — plus
+[Task Scheduler](../lld/01-task-scheduler.md),
 [Job Scheduler](../hld/18-job-scheduler.md),
 [Task Execution Engine](../appendix/lld.md#b-task-execution-engine).
 
@@ -220,7 +243,7 @@ Everything else maps onto existing material:
 |---|---|
 | Reconciliation engine | [Rule Engine](../lld/15-rule-engine.md) · [OMS](../lld/17-order-management-system.md) · [Payment System](../hld/29-payment-system.md) |
 | Invoice-to-pay | [OMS](../lld/17-order-management-system.md) · [Payment Wallet](../lld/03-payment-wallet.md) |
-| Agent orchestration | [Task Scheduler](../lld/01-task-scheduler.md) · [Job Scheduler](../hld/18-job-scheduler.md) · [Task Execution Engine](../appendix/lld.md#b-task-execution-engine) |
+| Agent orchestration | [Durable Execution Engine](../hld/36-durable-execution-engine.md) · [Task Scheduler](../lld/01-task-scheduler.md) · [Job Scheduler](../hld/18-job-scheduler.md) · [Task Execution Engine](../appendix/lld.md#b-task-execution-engine) |
 | Connector framework | [Rate Limiter](../lld/13-rate-limiter-full-design.md) · [Web Crawler](../hld/26-web-crawler.md) |
 | Close / rev rec | [Revenue Recognition](../revenue_recognition_pipeline.md) · [worked example](../revenue_recognition_walkthrough.md) |
 | Phase 4, any brief | [Scaling strategies](../appendix/scaling-strategies.md) · [Database decision list](../appendix/database-decision-list.md) · [Isolation levels](../appendix/isolation-levels.md) |
@@ -231,7 +254,9 @@ Everything else maps onto existing material:
 - [zamp.ai](https://www.zamp.ai/) — positioning, integration surface
 - [Automated Reconciliation: The Finance Team's Guide](https://www.zamp.ai/blogs/automated-reconciliation-the-finance-teams-guide) — reconciliation types
 - [AI Agents for Accounts Payable](https://www.zamp.ai/blogs/ai-agents-for-accounts-payable) — AP flow
-- [Backend Engineer JD](https://builtin.com/job/backend-engineer/2540825) — stack, GoF/SOLID/DRY
+- [Senior Software Engineer — Backend](https://careers.kula.ai/zamp-ai) (Zamp careers, Kula ATS) — verbatim stack, GoF/SOLID/DRY, customer names
+- [Backend Engineer JD](https://builtin.com/job/backend-engineer/2540825) — same stack, earlier posting
+- Solution Engineer JD (delisted; seen via search index only) — the sole Temporal mention
 - [Kenan Collaco](https://www.linkedin.com/in/kenancollaco/) · [Nipun Agarwal](https://www.linkedin.com/in/nipunagarwal99/)
 
 *Researched 2026-09-04.*
