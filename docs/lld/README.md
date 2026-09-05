@@ -225,4 +225,6 @@ clocks on other people's servers aren't comparable.
 ## Related
 
 - [HLD problems](../hld/README.md)
+- [Local Agent Runtime + MCP](../hld/37-local-agent-runtime.md) — a file-edit MCP tool end to end:
+  schema, JSON-RPC wire trace, the compare-and-swap that makes an in-place edit safe, and the atomic write
 - [LLD appendix](../appendix/lld.md) — concurrency primitives and the task execution engine

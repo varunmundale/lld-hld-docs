@@ -5,7 +5,7 @@ original whiteboard diagrams rendered alongside.
 
 | | | |
 |---|---|---|
-| **[HLD problems](hld/README.md)** | 34 problems + the [interview framework](hld/00-interview-framework.md) | 16 with whiteboard diagrams |
+| **[HLD problems](hld/README.md)** | 35 problems + the [interview framework](hld/00-interview-framework.md) | 16 with whiteboard diagrams |
 | **[LLD problems](lld/README.md)** | 17 problems | 6 with worked class diagrams |
 | **[Appendix](appendix/README.md)** | [HLD](appendix/hld.md) — consistency models, Elasticsearch, Cassandra, Kafka, Redis, Iceberg, Pinot | [LLD](appendix/lld.md) — concurrency, task execution engine |
 | **[Playbooks](appendix/README.md#playbooks)** | [Scaling strategies](appendix/scaling-strategies.md) — caching, sharding, load balancing | [Database decision list](appendix/database-decision-list.md) — which store, and which keys |
