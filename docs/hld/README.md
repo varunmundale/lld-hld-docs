@@ -47,6 +47,9 @@ every diagram is also indexed in [`diagrams/README.md`](../diagrams/README.md).
 | 35 | [RAG Application with Ingestion Pipeline](35-rag-application.md) |  |  |  |  |
 | 36 | [Durable Execution Engine (Temporal-style)](36-durable-execution-engine.md) |  |  |  | — *added, not from the notebook* |
 | 37 | [Local Agent Runtime (Claude Code) + MCP](37-local-agent-runtime.md) |  |  |  | — *added, not from the notebook* |
+| 38 | [Metrics Aggregation Platform](38-metrics-aggregation-platform.md) |  |  |  | — *added, not from the notebook* |
+| 39 | [Search Autocomplete with Relevance](39-search-autocomplete.md) |  |  |  | — *added, not from the notebook* |
+| 40 | [Full-Text Document Search (Elasticsearch)](40-document-search.md) |  |  |  | — *added, not from the notebook* |
 
 *Problems 15 and 16 are not present in the notebook — the numbering jumps from 14 to 17
 in the original notes. Problem 33 was labelled "B1" and 34/35 as "B2"/"B3" in the source,

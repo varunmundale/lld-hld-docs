@@ -25,6 +25,9 @@ One file per problem.*
 | 15 | [Build a Rule Engine](15-rule-engine.md) | ✓ |  |
 | 16 | [Design Spreadsheet with Formulas](16-spreadsheet-with-formulas.md) | ✓ |  |
 | 17 | [Order Management System](17-order-management-system.md) | ✓ | — *added, not from the notebook* |
+| 18 | [Metric Collection & Normalization Engine](18-metric-normalization-engine.md) | ✓ | — *added, not from the notebook* |
+| 19 | [Autocomplete Index & Ranker](19-autocomplete-index-and-ranker.md) | ✓ | — *added, not from the notebook* |
+| 20 | [Inverted Index & Query Evaluator](20-inverted-index-and-query-evaluator.md) | ✓ | — *added, not from the notebook* |
 
 *Problem numbering resets partway through the notebook (pages restart at "1" around
 Connect Four, then continue "2, 4, 5, 8, 9, 10..." from Amazon Locker onward) — renumbered
@@ -195,14 +198,25 @@ actually probe:
   admission are all the same race; the fix is to make check and mutate one atomic step.
 - **Strategy + factory for the pluggable axis.** Slot allocation, lift assignment, pricing,
   rate-limit algorithm, search — each is a seam where the extension question lands.
-- **Composite for anything recursive.** Rule engine expressions, spreadsheet formulas, and
-  the file system tree are the same shape.
+- **Composite for anything recursive.** Rule engine expressions, spreadsheet formulas, the
+  file system tree and the metric mapping DSL are the same shape — the fourth time it appears,
+  it stops being a coincidence and becomes the default answer to "user-defined logic over a record".
 - **A `step()` seam instead of wall-clock time.** Elevator, parking lot and rate limiter all
   inject simulated time so behaviour is deterministic and testable — the same point the task
   scheduler makes with an injected `Clock`.
+- **Sometimes the ladder is the wrong answer.** The graded lock ladder assumes shared mutable
+  state worth protecting. When the read path is hot enough, delete the state instead:
+  an immutable artifact behind a volatile reference, swapped atomically
+  ([autocomplete index](19-autocomplete-index-and-ranker.md#concurrency-swap-pin-retire),
+  [metric mappings](18-metric-normalization-engine.md)). Knowing when to stop refining locks
+  is itself the signal.
 - **State enough of the lifecycle to answer the edge cases.** `{AVAILABLE, ON_HOLD, BOOKED}`,
   `OUT_OF_SERVICE` compartments, idle lifts, reserved vs available stock — the explicit
   intermediate state is usually the answer to the follow-up.
+- **The same five show up in agentic systems too.** Check-then-act, table-driven dispatch,
+  an append-only log, a strategy seam, and the explicit intermediate state — mapped onto an
+  agent harness and MCP in
+  [Local Agent Runtime → the patterns underneath](../hld/37-local-agent-runtime.md#the-lld-patterns-underneath).
 - **Say what is out of scope, out loud.** Every worked file has an out-of-scope list; scoping
   is graded, silence is not.
 
@@ -222,9 +236,84 @@ systems raced — park and replay), `REJECTED` (genuinely impossible — DLQ). A
 `(source, eventId)`; and ordering by the state machine rather than by `occurredAt`, because
 clocks on other people's servers aren't comparable.
 
+### 18. [Metric Collection & Normalization Engine](18-metric-normalization-engine.md)
+*Added — not from the notebook.* The inside of the
+[Metrics Aggregation Platform](../hld/38-metrics-aggregation-platform.md): pull metrics from
+forty third-party providers, turn forty schemas into one, and roll them up — while the same
+numbers keep arriving twice, and sometimes different.
+**The load-bearing idea:** the mapping is **data, not code**. A `MappingSpec` of
+`Expr` nodes (the same composite as the [rule engine](15-rule-engine.md) and
+[spreadsheet](16-spreadsheet-with-formulas.md)) is interpreted by one `Normalizer`, so a
+mapping fix is a config version rather than a deploy — and because every fact is stamped with
+its `mapping_version` and `run_id`, the past can be re-normalized from the stored raw payload.
+`Connector` is the only provider-specific class, and it does transport and pagination only;
+retries, backoff and rate-limit leases live once in `CollectionRunner`.
+Ingest borrows the OMS's four outcomes — `APPLIED`, **`DUPLICATE`** (same key, same value:
+the normal case for a trailing re-poll — no write, no dirty window, no alert), `RESTATED`
+(same key, different value → supersede and mark the window dirty), `REJECTED` (quarantine,
+and do **not** advance the watermark). Ingest never mutates an aggregate; it records a fact
+and a debt. Aggregates are **mergeable accumulators** — `MeanAcc(sum, count)`, never a stored
+average — so streaming and recompute share one `fold` and cannot drift.
+**Watch for:** the rollup cell update is check-then-act; the ladder is striped locks → CAS
+with a version → single-writer-per-cell by partition, with the nice escape that a lost CAS
+can just fall through to the recompute path. Rate-limit buckets (app / account / endpoint)
+are acquired in a fixed order, scarcest first.
+
+### 19. [Autocomplete Index & Ranker](19-autocomplete-index-and-ranker.md)
+*Added — not from the notebook.* The serving component of
+[Search Autocomplete](../hld/39-search-autocomplete.md): generate candidates for a prefix,
+rank them, filter them, and return ten of them inside a 50 ms budget at 200k QPS.
+**Three ideas carry it.** (1) The index is an **immutable segment behind a volatile
+reference**, not a mutable trie — so the read path takes no lock at all, `topK` is a
+build-time artifact rather than a maintained cache, and freshness comes from a small delta
+segment unioned at query time (a memtable in front of an SSTable, by another name).
+(2) **The deadline is an object**, sliced per stage and passed down, with `orDegrade` making
+the fallback explicit in the type — one shared budget, never a timeout per call, because
+per-call timeouts sum to a number you never promised. (3) `ServingSnapshot` pins
+(index, model, denylist) **once per request**, so a request can never score v7 candidates
+with a v8 model.
+**Watch for:** this is the problem where the usual concurrency ladder is the *wrong* answer —
+copy-on-write beats any lock, and the only real hazard is retiring a segment under a live
+reader (`tryPin` must be a CAS that refuses to resurrect zero, and a cold segment must be
+warmed before it is published or p99 cliffs on every deploy). Also: candidate sources are
+**required vs optional** — a slow personal-history source is dropped, a dead global index is
+an error; and post-filters run on the full ranked list with truncation **last**, or one
+intent eats half the dropdown. The client half matters as much: debounce, cancel in-flight,
+and a monotonic sequence number with a high-water mark, or a slow response for `"cor"` lands
+on top of a fast one for `"coron"` — the defect users actually report.
+
+### 20. [Inverted Index & Query Evaluator](20-inverted-index-and-query-evaluator.md)
+*Added — not from the notebook.* What Lucene does underneath
+[Full-Text Document Search](../hld/40-document-search.md): index documents made of lines,
+then answer `"connection refused" AND repo:payments` with **every** matching document.
+**The abstraction:** a query does not return a set, it returns a `PostingsIterator` over
+ascending doc ids, and every operator — AND, OR, NOT, phrase, filter — is an iterator
+composing other iterators. Nothing is materialized, so cost tracks the **rarest** term rather
+than the corpus. `advance(target)` over a skip list is what makes that true; conjunction is
+the **leapfrog**, and sorting sub-iterators by `cost()` ascending is the difference between
+fast and correct-but-useless.
+**The consequence, and the reason this problem is not the usual one:** `Collector` owns
+`minCompetitiveScore()`, the contract that permits skipping. `TopKCollector` raises it as its
+heap fills, so block-max WAND can skip 90 % of the postings; `AllDocsCollector` can never
+raise it, so **exhaustive retrieval structurally forbids the fastest execution path**. Running
+WAND under an exhaustive collector returns silently incomplete results — the worst failure
+mode in the file.
+**Watch for:** phrase matching intersects documents *first* and only then decodes positions;
+the "must not span a line" requirement is enforced by a **position gap** inserted at index
+time, not by a check at query time. Doc ids are segment-local and renumbered by every merge —
+never persist or return one. A delete is a bit in `liveDocs`, not a removal. Segments are
+immutable, the writer is single-threaded, and readers pin a segment list by refcount so a
+merge cannot delete files out from under a running query.
+
 ## Related
 
 - [HLD problems](../hld/README.md)
 - [Local Agent Runtime + MCP](../hld/37-local-agent-runtime.md) — a file-edit MCP tool end to end:
   schema, JSON-RPC wire trace, the compare-and-swap that makes an in-place edit safe, and the atomic write
+- [Metrics Aggregation Platform](../hld/38-metrics-aggregation-platform.md) — the HLD that
+  [18](18-metric-normalization-engine.md) is the class model for: raw → facts → rollups, restatement, API budgets
+- [Search Autocomplete with Relevance](../hld/39-search-autocomplete.md) — the HLD for
+  [19](19-autocomplete-index-and-ranker.md): two-stage ranking, the self-generated training signal, safety
+- [Full-Text Document Search (Elasticsearch)](../hld/40-document-search.md) — the HLD for
+  [20](20-inverted-index-and-query-evaluator.md): mappings, scatter-gather, deep pagination, sharding
 - [LLD appendix](../appendix/lld.md) — concurrency primitives and the task execution engine

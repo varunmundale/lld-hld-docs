@@ -59,6 +59,7 @@ protocol with a spec, and the only part you will ever implement yourself.
 - [Security pitfalls](#security-pitfalls)
 - [Local MCP client vs the API's MCP connector](#local-mcp-client-vs-the-apis-mcp-connector)
 - [When not to use MCP](#when-not-to-use-mcp)
+- [The LLD patterns underneath](#the-lld-patterns-underneath)
 - [What actually fails people](#what-actually-fails-people)
 
 ---
@@ -1719,6 +1720,70 @@ a stdio server on your laptop is unreachable that way — remote HTTP only.
   cheaper than a tool: no process, no schema, no round trip.
 - **Bulk data.** Do not stream a million rows through the context window. Return a
   `resource_link`, a file path, or a summary and let the agent pull what it needs.
+
+## The LLD patterns underneath
+
+Agentic systems look novel and are structurally very old. Almost everything above is a
+pattern from the [LLD problem set](../lld/README.md), applied to a loop whose decisions
+happen to come from a model. Worth reading as a map: where each pattern sits, and what
+breaks without it.
+
+| Pattern | Where it lives here | What breaks without it |
+|---|---|---|
+| **Registry** | `mcp__server__tool → (connection, real name)`; skills; hooks by event | Adding a tool means editing the loop |
+| **Adapter** | MCP tool def → Messages API tool def; MCP `content` → `tool_result` | The model's world and the protocol's world leak into each other |
+| **Chain of responsibility** | [the permission gate](#6-the-permission-gate): hook → deny → allow → mode → ask, first decision wins | Policy becomes one nested `if` nobody can audit |
+| **Interceptor** | [hooks](#hooks) — `PreToolUse`, `PostToolUse`, `PreCompact` | Users can only *ask* for a rule, never enforce one |
+| **Command** | a `tool_use` block: name + arguments, serialisable, queued, gated, logged, undoable | No audit, no replay, no undo, no permission layer to speak of |
+| **Memento** | `file-history/<session>/<hash>@vN` + the transcript leaf | Rewind can restore the conversation or the files, but not both consistently |
+| **Event sourcing** | the [append-only JSONL transcript](#the-transcript-is-the-state); state = fold over records | Crash loses the session; resume is impossible |
+| **State machine** | [`stop_reason`](#stop_reason-is-the-loops-state-machine); the MCP lifecycle (`uninitialised → initialising → ready`) | The loop can't tell "done" from "blocked" — it hangs or gives up early |
+| **Proxy / stub** | the MCP client — a local call standing in for a remote capability | Every call site learns the transport |
+| **Multiplexer + correlation id** | `pending[id] → Future` in the read loop | Concurrent calls resolve to each other's results |
+| **Reactor + Future** | one read loop demultiplexing; `call()` awaits | Send-then-read-one-reply deadlocks the first time a server calls *you* |
+| **Connection pool** | one MCP client per server, stateful, session-lived | Re-handshaking per call; lost `Mcp-Session-Id` and subscriptions |
+| **Observer** | `notifications/tools/list_changed`, `resources/subscribe` → `resources/updated` | Polling, or a stale tool list |
+| **Strategy + factory** | permission modes; transport (stdio vs HTTP); retry, truncation and compaction policies | Every new axis is another `if` in the hot path |
+| **Compare-and-swap** | [`expected_replacements`](#why-exact-string-replace-and-not-the-obvious-alternatives); dedupe on `tool_use_id` | Check-then-act races: the model edits a file it read four turns ago |
+| **Claim check** | `resource_link`; spilling big tool output to `tool-results/` | 50k tokens of JSON in the prefix for the rest of the session |
+| **Composite** | subagents — an agent whose tool is another agent, same interface | Every read-heavy task burns the parent's context |
+| **Bulkhead / timeout** | per-call timeouts, server restart policy, subagent context isolation | One hung server hangs the whole session |
+| **Null object** | denial returned as a `tool_result`, not raised | The turn dies whenever the user says no |
+
+### The five that actually repeat
+
+Across this document, the [OMS](../lld/17-order-management-system.md), the
+[durable execution engine](36-durable-execution-engine.md) and most of the LLD set, the same
+five keep showing up — and they are the ones worth being fluent in:
+
+1. **Check-then-act, made atomic.** `expected_replacements` here; seat booking in
+   [movie tickets](../lld/11-movie-ticket-booking.md); stock deduction in
+   [inventory](../lld/14-inventory-management.md); rate-limit admission in
+   [the limiter](../lld/13-rate-limiter-full-design.md). Always the same bug, always the same
+   fix: make the check and the mutate one step, on the side that can see the truth.
+2. **Table-driven dispatch instead of a `switch`.** Registry here, `Map<(State, Event), Transition>`
+   in the OMS. The test is the same: *can you add a case without editing the control flow?*
+3. **An append-only log as the source of truth.** The transcript here, the event history in
+   the durable engine, the immutable ledger in [payment wallet](../lld/03-payment-wallet.md).
+   Audit, recovery and replay all fall out of one decision.
+4. **A pluggable seam behind strategy + factory.** Permission modes and transports here;
+   pricing, slot allocation, lift assignment, rate-limit algorithm there. The seam is
+   invariably where the follow-up question lands.
+5. **The explicit intermediate state.** `tool_use` ("blocked", not "done") here;
+   `CANCELLING` in the OMS; `ON_HOLD` in booking; idle lifts. **The state you were tempted to
+   leave implicit is the answer to the hard question.**
+
+### And the ones that are conspicuously absent
+
+Worth noticing, because it says something about where the complexity went. There is no
+**interpreter** and no **visitor** — no expression tree to walk, no AST to evaluate, because
+*the model is the interpreter*. The composite-expression machinery that carries the
+[rule engine](../lld/15-rule-engine.md) and the
+[spreadsheet](../lld/16-spreadsheet-with-formulas.md) has no analogue here: where those
+systems parse a user's intent into a tree and evaluate it deterministically, an agent hands
+the intent to a model and gets back a flat list of commands. The parsing problem did not get
+solved; it got moved behind an API, which is precisely why the remaining engineering is all
+registry, policy, transport and state.
 
 ## What actually fails people
 
