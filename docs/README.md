@@ -11,7 +11,7 @@ original whiteboard diagrams rendered alongside.
 | **[Playbooks](appendix/README.md#playbooks)** | [Scaling strategies](appendix/scaling-strategies.md) — caching, sharding, load balancing | [Database decision list](appendix/database-decision-list.md) — which store, and which keys |
 | **[Diagrams](diagrams/README.md)** | 19 renders + editable `.excalidraw` sources | |
 | **[Zamp](zamp/README.md)** | [R2 system design round](zamp/01-r2-system-design-round.md) — format, likely briefs, interviewers | [CEO / behavioral round](zamp/02-behavioral-round.md) — "spikes", the career arc, worked answers |
-| **Code** | [Temporal SDK example](../src/main/java/org/example/temporal/README.md) — durable execution, runnable | [Pinot segment replace](../src/main/scala/com/revrec/pinot/README.md) — Spark job |
+| **Code** | [Temporal SDK example](../src/main/java/org/example/temporal/README.md) — Uber ride dispatch, durable execution, runnable | [Pinot segment replace](../src/main/scala/com/revrec/pinot/README.md) — Spark job |
 
 ## Standalone designs
 

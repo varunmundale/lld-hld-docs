@@ -1,54 +1,103 @@
 package org.example.temporal;
 
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
+import io.temporal.client.WorkflowStub;
 import io.temporal.common.WorkflowExecutionHistory;
+import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.testing.WorkflowReplayer;
+import io.temporal.worker.Worker;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.Duration;
 
 /**
- * The safety net for the versioning pitfall.
+ * The test you actually need in CI, and the one most teams discover they needed the hard way.
  *
- * Export a real execution's history and replay it against the CURRENT workflow code. If the
- * code has drifted in a way that would break executions already in flight, this throws
- * instead of production throwing at 3am on an execution that then cannot progress.
+ * A workflow's source code is not the source of truth. HISTORY is. When a worker picks up a
+ * ride that started an hour ago, it rebuilds the workflow's state by re-running your code
+ * against the recorded history and checking that every command still lines up. If your new
+ * deploy calls activities in a different order, or skips one, or adds one, replay diverges and
+ * that ride wedges with a NonDeterministicException.
  *
- *   temporal workflow show --workflow-id INV-1001 --output json > history.json
- *   mvn -q compile exec:java \
- *       -Dexec.mainClass=org.example.temporal.ReplayCheck \
- *       -Dexec.args="history.json"
+ * So: keep a corpus of real histories - from production, per workflow type - and replay it
+ * against the candidate build before shipping. This class shows the mechanic on a history it
+ * generates itself.
  *
- * In a real repo this is a JUnit test over a directory of archived histories, wired into CI,
- * and it is the single highest-value test you can have on a Temporal codebase. Try it: run it
- * once against a history recorded before the "add-fraud-check" patch, then delete the
- * Workflow.getVersion() guard in InvoiceWorkflowImpl and run it again.
+ *   mvn -q compile exec:java -Dexec.mainClass=org.example.temporal.ReplayCheck
+ *
+ * To watch it FAIL the way it is supposed to, delete the getVersion block in
+ * RideWorkflowImpl (or move the checkDriverSafetyRating call above reserveDriver) and run it
+ * again against a history captured before the change.
  */
 public final class ReplayCheck {
 
     public static void main(String[] args) throws Exception {
-        if (args.length == 0) {
-            System.out.println("usage: ReplayCheck <history.json> [more.json ...]");
-            return;
-        }
+        System.setProperty("gateway.ledger", "target/replay-gateway-ledger.txt");
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "error");
+        PaymentGateway.reset();
 
-        int failures = 0;
-        for (String arg : args) {
-            Path path = Path.of(arg);
-            try {
-                WorkflowExecutionHistory history =
-                        WorkflowExecutionHistory.fromJson(Files.readString(path));
-                WorkflowReplayer.replayWorkflowExecution(history, InvoiceWorkflowImpl.class);
-                System.out.println("OK        " + path
-                        + "  - current code is replay-compatible with this execution");
-            } catch (Exception e) {
-                failures++;
-                System.out.println("BROKEN    " + path);
-                System.out.println("          " + e.getClass().getSimpleName() + ": " + e.getMessage());
-                System.out.println("          Deploying this code would STICK that execution. Guard the");
-                System.out.println("          change with Workflow.getVersion(), or pin old runs to old");
-                System.out.println("          workers with build-id versioning, and re-run this check.");
-            }
+        WorkflowExecutionHistory history = captureHistory();
+        System.out.println("captured a completed ride: " + history.getEvents().size() + " events");
+
+        try {
+            WorkflowReplayer.replayWorkflowExecution(history, RideWorkflowImpl.class);
+            System.out.println("REPLAY PASSES - this build can safely take over rides that are "
+                    + "already in flight");
+        } catch (Exception e) {
+            System.out.println("REPLAY FAILS - shipping this build would wedge every ride that "
+                    + "is mid-flight:");
+            System.out.println("  " + e.getMessage());
+            System.exit(1);
         }
-        System.exit(failures == 0 ? 0 : 1);
+        System.exit(0);
+    }
+
+    /** Runs one ride end to end on the test server and hands back its history. */
+    private static WorkflowExecutionHistory captureHistory() {
+        TestWorkflowEnvironment env = TestWorkflowEnvironment.newInstance();
+        try {
+            DriverFleet fleet = new DriverFleet();
+            PaymentGateway psp = new PaymentGateway();
+            RideActivitiesImpl activities = new RideActivitiesImpl(fleet, psp);
+            String queue = TaskQueues.dispatch("sfo");
+
+            Worker dispatch = env.newWorker(queue);
+            dispatch.registerWorkflowImplementationTypes(RideWorkflowImpl.class);
+            dispatch.registerActivitiesImplementations(activities);
+            env.newWorker(TaskQueues.NOTIFICATIONS).registerActivitiesImplementations(activities);
+            env.newWorker(TaskQueues.PAYMENTS).registerActivitiesImplementations(activities);
+            env.start();
+
+            WorkflowClient client = env.getWorkflowClient();
+            String rideId = "RIDE-REPLAY";
+            RideWorkflow workflow = client.newWorkflowStub(RideWorkflow.class,
+                    WorkflowOptions.newBuilder()
+                            .setTaskQueue(queue)
+                            .setWorkflowId(rideId)
+                            .setWorkflowExecutionTimeout(Duration.ofHours(6))
+                            .build());
+
+            env.registerDelayedCallback(Duration.ofSeconds(6), () -> {
+                RideWorkflow stub = client.newWorkflowStub(RideWorkflow.class, rideId);
+                stub.acceptOffer(DriverResponse.of(fleet.openOfferFor("D-101"), "D-101"));
+            });
+            env.registerDelayedCallback(Duration.ofSeconds(90), () ->
+                    client.newWorkflowStub(RideWorkflow.class, rideId).driverArrived());
+            env.registerDelayedCallback(Duration.ofSeconds(120), () ->
+                    client.newWorkflowStub(RideWorkflow.class, rideId).tripStarted());
+            env.registerDelayedCallback(Duration.ofSeconds(900), () ->
+                    client.newWorkflowStub(RideWorkflow.class, rideId).tripEnded(4390));
+
+            WorkflowClient.start(workflow::requestRide,
+                    new RideRequest(rideId, "R-4471", "sfo",
+                            new Location("Ferry Building", 37.7955, -122.3937),
+                            new Location("SFO Terminal 2", 37.6213, -122.3790), "UberX"));
+
+            WorkflowStub untyped = WorkflowStub.fromTyped(workflow);
+            System.out.println("result: " + untyped.getResult(String.class));
+            return env.getWorkflowExecutionHistory(untyped.getExecution());
+        } finally {
+            env.close();
+        }
     }
 }

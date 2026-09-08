@@ -645,32 +645,45 @@ database.** Most bad adoptions are one of those two boundaries being crossed.
 ## Runnable example
 
 [`src/main/java/org/example/temporal/`](../../src/main/java/org/example/temporal/README.md) —
-the same invoice-approval process on the **real Temporal Java SDK**, carried through every
-failure mode above.
+**Uber ride dispatch** on the **real Temporal Java SDK**: a rider requests a ride, it is
+broadcast to nearby drivers, one accepts, the card is held, the trip runs, the card is settled
+— carried through every failure mode above.
 
 ```sh
-mvn -q compile exec:java -Dexec.mainClass=org.example.temporal.TemporalDemo
+mvn -q compile exec:java -Dexec.mainClass=org.example.temporal.RideDemo
 ```
 
-No server to install: it runs on Temporal's in-memory time-skipping test server, so a
-72-hour approval deadline and a 2-day settlement window elapse in milliseconds while
-producing a genuine event history. Eight scenarios — `happy`, `retry`, `lost-ack`,
-`approve`, `reject`, `escalate`, `parked`, `compensate` — each printing the activity trace,
-the history as a table, and the elapsed execution time against the wall clock:
+No server to install: it runs on Temporal's in-memory time-skipping test server, so a 15-second
+offer TTL and a five-minute dispatch deadline elapse in milliseconds while producing a genuine
+event history. Thirteen scenarios — `happy`, `decline`, `silent`, `race`, `stale-accept`,
+`at-least-once`, `lost-ack`, `cross-ride`, `cancel`, `cancel-early`, `declined`, `no-drivers`,
+`queues` — each printing the activity trace with the **task queue** every activity ran on, the
+history as a table, and the elapsed execution time against the wall clock:
 
 ```
-  SCENARIO: escalate  -  TIMEOUT, ESCALATION, THEN APPROVAL
-  virtual time elapsed   5d 8h      wall clock  38ms      gateway real charges  1
+  SCENARIO: silent  -  NOBODY ANSWERS ROUND 1
+  virtual time elapsed   13m 20s     wall clock  94ms     real money movements  2
 ```
 
-The one to run twice is `lost-ack`: the gateway charges, the ack is lost, Temporal retries,
-and the key — from `Workflow.randomUUID()`, so recorded in history — makes the second
-attempt a no-op. Swap it for `java.util.UUID.randomUUID()` and the vendor is charged twice.
-That one line is the whole of [pitfall 4](#4-at-least-once-activities-always).
+Three to run:
 
-There is also a worker + CLI for running against `temporal server start-dev` with the web UI
-and a real `kill -9`, and a `ReplayCheck` that replays an exported production history against
-current code — the CI guard for [pitfall 2](#2-versioning-is-the-hard-part).
+- **`lost-ack`** — the PSP holds the card, the ack is lost, Temporal retries, and the key —
+  from `Workflow.randomUUID()`, so recorded in history — makes the second attempt a no-op.
+  Swap it for `java.util.UUID.randomUUID()` and the rider is charged twice. That one line is
+  the whole of [pitfall 4](#4-at-least-once-activities-always).
+- **`race`** — two drivers accept the same ride in the same millisecond; one gets `WON`, the
+  other `TOO_LATE`, and there is **no lock anywhere in the repo**. The server serializes both
+  updates into one history and one workflow thread runs them in order. Its counterpart
+  `cross-ride` shows the race Temporal *cannot* solve — two different ride workflows claiming
+  the same driver — and why the fleet service needs a compare-and-set.
+- **`queues`** — a task queue with zero workers polling it. Tasks pile up server-side, nothing
+  is dropped, and `TIMEOUT_TYPE_SCHEDULE_TO_START` fires: the one timeout that always means
+  "capacity", never "the code is slow".
+
+There is also a three-pool worker (`ride-dispatch-<city>`, `ride-payments`,
+`ride-notifications`) plus a CLI for running against `temporal server start-dev` with the web UI
+and a real `kill -9`, and a `ReplayCheck` that replays a captured history against current code
+— the CI guard for [pitfall 2](#2-versioning-is-the-hard-part).
 
 ## Signals graders are reading
 
@@ -690,7 +703,7 @@ current code — the CI guard for [pitfall 2](#2-versioning-is-the-hard-part).
 - [33. Notification System](33-notification-system.md) — retry policies and dead-lettering
 - [17. Order Management System](../lld/17-order-management-system.md) — what you write by
   hand when you *don't* have durable execution: explicit states, transition table, outbox
-- [Temporal SDK example](../../src/main/java/org/example/temporal/README.md) — this design, on the real SDK, with runnable failure scenarios
+- [Temporal SDK example](../../src/main/java/org/example/temporal/README.md) — Uber ride dispatch on the real SDK, with runnable failure scenarios
 - [01. Task Scheduler (LLD)](../lld/01-task-scheduler.md) ·
   [Task Execution Engine](../appendix/lld.md#b-task-execution-engine) — DAG orchestration internals
 - [Zamp R2 round](../zamp/01-r2-system-design-round.md#3-agent-task-orchestration-platform--kenans-likely-angle)
