@@ -4,7 +4,10 @@
 One file per problem.*
 
 Start with the [HLD interview framework](00-interview-framework.md) — the flow and the
-NFR checklist used to attack everything below.
+NFR checklist used to attack everything below, then the
+[requirements index](requirements-index.md) — the ideal functional requirements,
+non-functional requirements and out-of-scope list for every problem on this page, each one
+linked to its [HelloInterview breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly).
 
 **Freq** is how often the problem has come up. **Diagram** links the whiteboard render;
 every diagram is also indexed in [`diagrams/README.md`](../diagrams/README.md).
@@ -48,7 +51,7 @@ every diagram is also indexed in [`diagrams/README.md`](../diagrams/README.md).
 | 36 | [Durable Execution Engine (Temporal-style)](36-durable-execution-engine.md) |  |  |  | — *added, not from the notebook* |
 | 37 | [Local Agent Runtime (Claude Code) + MCP](37-local-agent-runtime.md) |  |  |  | — *added, not from the notebook* |
 | 38 | [Metrics Aggregation Platform](38-metrics-aggregation-platform.md) |  |  |  | — *added, not from the notebook* |
-| 39 | [Search Autocomplete with Relevance](39-search-autocomplete.md) |  |  |  | — *added, not from the notebook* |
+| 39 | [Search Autocomplete with Relevance](39-search-autocomplete.md) | 1h |  |  | — *added; structured as a 60-min run* |
 | 40 | [Full-Text Document Search (Elasticsearch)](40-document-search.md) |  |  |  | — *added, not from the notebook* |
 
 *Problems 15 and 16 are not present in the notebook — the numbering jumps from 14 to 17
@@ -60,6 +63,12 @@ likely a second batch — renumbered here as 33-35 for continuity.*
 Quick-reference tables kept alongside the appendix, transcribed from the *HLD quick cheat
 sheet* spreadsheet:
 
+- [Requirements index](requirements-index.md) — FR / NFR / out-of-scope for every problem,
+  the [crux of each in one line](requirements-index.md#the-crux-of-each-problem-in-one-line)
+  with mid / senior / staff+ expectations, the
+  [five NFR archetypes](requirements-index.md#the-five-nfr-archetypes) the set collapses
+  into, and [the superset](requirements-index.md#the-superset-every-crux-collapsed-into-one-list) —
+  the fourteen moves every crux reduces to
 - [Isolation levels](../appendix/isolation-levels.md) — the four levels, the anomaly matrix,
   which level each use case needs, and a decision tree
 - [Database decision list](../appendix/database-decision-list.md) — which database fits which

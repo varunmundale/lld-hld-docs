@@ -6,10 +6,12 @@ original whiteboard diagrams rendered alongside.
 | | | |
 |---|---|---|
 | **[HLD problems](hld/README.md)** | 38 problems + the [interview framework](hld/00-interview-framework.md) | 16 with whiteboard diagrams |
+| **[Requirements index](hld/requirements-index.md)** | Ideal FR / NFR / out-of-scope for all 39 problems | plus the **crux** of each and what clears the bar at mid / senior / staff+ |
 | **[LLD problems](lld/README.md)** | 20 problems | 9 with worked class diagrams |
 | **[Appendix](appendix/README.md)** | [HLD](appendix/hld.md) — consistency models, Elasticsearch, Cassandra, Kafka, Redis, Iceberg, Pinot | [LLD](appendix/lld.md) — concurrency, task execution engine |
 | **[Playbooks](appendix/README.md#playbooks)** | [Scaling strategies](appendix/scaling-strategies.md) — caching, sharding, load balancing | [Database decision list](appendix/database-decision-list.md) — which store, and which keys |
 | **[Diagrams](diagrams/README.md)** | 19 renders + editable `.excalidraw` sources | |
+| **[Data engineering](data-engineering/README.md)** | [Lead DE quick notes](data-engineering/quick-notes.md) — fundamentals checklist, sessionization, deterministic ids, RAND/salting, DE-style LLD | |
 | **[Zamp](zamp/README.md)** | [R2 system design round](zamp/01-r2-system-design-round.md) — format, likely briefs, interviewers | [CEO / behavioral round](zamp/02-behavioral-round.md) — "spikes", the career arc, worked answers |
 | **Code** | [Temporal SDK example](../src/main/java/org/example/temporal/README.md) — Uber ride dispatch, durable execution, runnable | [Pinot segment replace](../src/main/scala/com/revrec/pinot/README.md) — Spark job |
 
@@ -30,6 +32,7 @@ docs/
   appendix/    hld.md, lld.md, cheat sheets            + README.md index
   diagrams/    PNG renders, excalidraw/ scene sources  + README.md index
   zamp/        company-specific interview prep         + README.md index
+  data-engineering/  DE interview prep + reference notes + README.md index
 ```
 
 Every diagram ships as a PNG plus its `.excalidraw` scene under
