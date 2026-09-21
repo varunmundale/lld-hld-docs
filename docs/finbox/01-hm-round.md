@@ -110,7 +110,7 @@ Each line of the JD against what you can actually claim. **Strong** = lead with 
 | Data modelling: Star, Data Vault 2.0, OBT | **Bridge** | Real fact/dimension modelling of financial data: journal → ledger → revenue-recognition entries → period summaries ([worked example](../revenue_recognition_walkthrough.md)). Data Vault: conceptual only — know hubs/links/satellites and when it beats a star (many sources, audit, insert-only). OBT: the Pinot serving tables are OBT by design; say so. |
 | dbt, Python, SQL | **SQL: strong · Python: solid · dbt: gap** | Your incremental materialisation framework *is* dbt's incremental-model idea implemented on Iceberg. Know dbt vocabulary (models, `incremental` materialisation, `merge` strategy, tests, `ref`, lineage) before the round so you can map your framework onto it in one sentence. |
 | Mentor engineers; architecture standards | **Strong** | Onboarded and mentored **four engineers into the team**; two of them became your execution partners on the reporting platform. Planned the projects — milestones, sequencing, who takes what. Plus on-call runbooks, documented critical flows, design reviews. [§I](#i-lead-level-stories). |
-| Built platforms from the ground up, at scale | **Strong** | Recko's product rebuilt inside Stripe: Alpha → Private Beta → Public Beta → 10K+ merchants. Flipkart DCC as a second zero-to-one. |
+| Built platforms from the ground up, at scale | **Strong** | Recko's product rebuilt inside Stripe: Alpha → Private Beta → Public Beta → **10K+ merchants, cumulative onboarded** (~5K at public beta — that's why older material says 5K). Flipkart DCC as a second zero-to-one. |
 | 7–10 years, hands-on | **Strong** | 8+. You still write the Spark and Scala. |
 
 Tag-cloud items you should not pretend about: **Pig, Storm, Hive** (Hive: fine, Pig/Storm: say
@@ -188,18 +188,18 @@ of the second initiative.
    production-fidelity staging (dual upstream modes, configurable input variants) plus
    business invariant checkers, not more alerting.
 
-**Numbers to have in your pocket** — fill the blanks honestly before the round; "roughly" is
-fine, invented is not:
+**Numbers to have in your pocket** (from the 2026-09-21 drill; "roughly" is fine, invented
+is not):
 
 | | |
 |---|---|
-| Data volume / day, entity count, table sizes | ___ |
-| Incremental change rate (what % of the world changes per run) | ___ — this is the number that justifies the whole design |
-| Cluster shape before/after, cost before/after | $600/day saved; ___ |
-| Freshness SLA and what depended on it (close? customer report?) | ___ |
-| Pinot: table count, segment size, ingestion mode, p99 before/after | 10–20 s → sub-second; ___ |
-| Incidents categorised, over what window; checkers shipped; bugs caught in staging | ___ |
-| Team size, your role in it | ___ |
+| Volume | peak **~1M events/hour**, **~5M/day**; biggest table **~9 TB** |
+| Incremental change rate | **≤ 1M changed entities per run out of ~12B** — under 0.01% of the world. **This is the sentence:** *"Recomputing twelve billion entities every run to update one million was the bug."* |
+| Cluster / cost | ~5,000 vcores → ~8,000 vcores; **~$3k/day → ~$2.3k/day** (the $600/day). **Check the arithmetic before you say it:** 5k × 12 h = 60k vcore-hours vs 8k × 3 h = 24k predicts a ~60% drop, not ~23%. If the incremental pipeline now runs several times a day, that is the explanation and it is a *good* one — "bigger cluster, quarter of the runtime, run more often, net $600/day less and a freshness we couldn't buy before." If not, find the real reason. |
+| What sub-3 h unblocked | No hard blocker — the value is the **close window, T+1 to T+5 after month end**, when finance teams are in the product closing their books. 12 h = closing on yesterday's numbers; 3 h = today's. Engagement in the close window rose [by ___ if known]; it made the product competitive. |
+| Pinot: table count, segment size, ingestion mode, p99 | 10–20 s → sub-second; ___ |
+| Incidents categorised, window; checkers shipped; bugs caught in staging | ___ |
+| Team | four engineers you brought on (2 grads, 2 laterals); two execution partners; you as DRI |
 
 **"What would you do differently?"** Have a real answer. Candidates: do the incident
 categorisation a year earlier; put the invariant checks in the pipeline from day one rather
@@ -312,7 +312,7 @@ doesn't have. Ranked by likelihood.
 | **"How do you set standards on a team?"** | Candidate: the on-call documentation of critical flows + the invariant checkers as a *definition of done* — a pipeline isn't shipped until its invariants are checked in staging. Or design-review norms you introduced. Tell it as: the gap, the standard, how you got adoption without mandate, whether it stuck. | **Half-written** — pick one, add the adoption beat |
 | **"A design disagreement with someone senior."** | S4 (Pinot real-time vs Iceberg recoverability) works as-is; for an HM keep the criteria-matrix mechanism — they'll like it. | Ready |
 | **"A time you pushed back on product / a stakeholder."** | S5 (accountant-role phasing). Know the ending. | Ready, ending missing |
-| **"A failure you owned."** | Real, with a cost. Candidates: an incident your pipeline caused, a backfill that went wrong, an estimate badly missed. Not S6 — that's a success story with humility in it, and an HM will read the substitution. | **Missing** — write it |
+| **"A failure you owned."** | See [the failure story](#the-failure-story) — backfills through the new 3 h pipeline missed the SLA; you wrote the backfill SOP. Not S6 — that's a success story with humility in it. | Ready — fill the SLA and SOP contents |
 | **"A cost-optimisation / migration with before-and-after."** | Two: (a) $600/day (₹50k/day), whole-world → incremental — add cluster shape before/after; (b) the **Spark 3.3 + Airflow 2 migration** you led on a live financial pipeline — how you sequenced it, how you proved parity (staging with production upstream + invariant checkers is the answer), what broke. The JD's "compute/storage cost optimisation" and a platform that "grew product-by-product" both want (b). | (a) ready, numbers thin · (b) needs the sequencing + parity beats |
 | **"Largest scale / concurrency you've handled?"** | Spark at high concurrency on the revrec estate — skew, shuffle pressure, OOMs, small files, concurrent Iceberg writers and commit conflicts; and Flipkart Big Billion Day load/stress testing of accounting services. Give one concrete failure and its fix (e.g. salting a skewed merchant key; Iceberg commit retries under concurrent writers). Numbers from [§E](#e-the-platform-deep-dive). | Ready, pick the one failure |
 | **"How do you use AI in your work?"** | Likely at a company that just raised on "agentic workflows". Concrete, not aspirational: Incidents AI for the categorisation that drove S3; internal knowledge AI for on-call; Claude for delegating bounded tasks (scaffolding, SQL debugging, test generation) and Sourcegraph-style code search; dbgit was built with Claude in the loop. Then the lead-level point: *what you don't delegate* — correctness decisions on financial data, and reviews. | Ready |
@@ -330,40 +330,68 @@ failure.
 is buying leverage: one of you plus N engineers who ship more than N. The strongest ending
 to a mentoring story is *they now own something you used to own.*
 
-The facts: as Lead on the reporting platform you brought **four engineers into the team**,
-and **two of them became your execution partners** — most of the incremental materialisation
-and serving-layer work shipped through them. Shape it as one arc, ~90 seconds:
+The facts (drill, 2026-09-21): across the two initiatives you brought **four engineers**
+onto the platform — **two new grads, two laterals** — and gave each the full KT on revenue
+recognition. **Two became execution partners:** one grad on the 12 h → 3 h incremental
+re-architecture, one lateral on the 3 h → sub-hour reporting platform and Pinot. This
+started **before** the Lead title (Sep 2023 onward) — say that; it is the Lead signal.
 
-> "When I took Lead on the reporting platform I had a plan and no one to execute it with, so
-> the first thing I did was bring in four engineers — [who they were: new to Stripe? new to
-> data? from adjacent teams?]. Onboarding them was the on-call documentation and the
-> production-fidelity staging: they could run real flows end to end on day three instead of
-> reading code for a month.
+> "Over the two big initiatives I brought four engineers onto the platform — two new grads,
+> two laterals — and gave each of them the full KT on revenue recognition: the accounting
+> model, the pipeline, the on-call. Two of them became my execution partners. One of the
+> grads took the incremental-processing work with me — the twelve-to-three-hour
+> re-architecture: [what they couldn't do at the start → what you handed them first → what
+> they owned at the end, e.g. the change-detection stage / a report family end to end]. One
+> of the laterals took the reporting platform — three hours to sub-hour and the Pinot serving
+> layer — [same three beats]. By the end each of them owned a milestone with a number on it,
+> not a set of tasks. And that was before I had the Lead title — it's a big part of why I got
+> it.
 >
-> Two of them I deliberately grew into owners. [Name one arc: what they couldn't do at the
-> start — Spark internals? Iceberg semantics? the accounting domain? — what you did — paired
-> on the first milestone, then handed them a milestone with you as reviewer, then put them
-> on-call primary with you as backup — and what they owned by the end: e.g. the Pinot
-> ingestion path / the materialisation framework.] By the end of the year they were shipping
-> most of the platform with me reviewing rather than writing, which is how sub-hour
-> freshness and the serving layer actually got delivered.
->
-> The rule I took from it: give people a whole milestone with a visible number, not a set of
-> tasks. Ownership of an outcome is what turned the two from executing my plan into arguing
-> with it — which is when I knew it had worked."
+> The rule I took from it: give people a whole milestone with a visible number. Ownership of
+> an outcome is what turned them from executing my plan into arguing with it — which is when
+> I knew it had worked."
 
-**Fill before the round:** who the four were and where from; the one specific arc for one
-of the two; what happened to the other two (still on the team? moved? — say it plainly;
-"two didn't become owners" is fine and reads as honest); whether either of the two was
-promoted or took the platform over when you left. **That last one is the ideal ending —
-check it.**
+**Fill before the round:** the three beats for one of the two (couldn't → handed → owned);
+what happened to the other two (still on the team? moved? — say it plainly); **whether
+either execution partner took the platform over when you left in April** — the ideal
+ending; check it.
 
 | They ask | You say |
 |---|---|
-| "Why only two of four?" | Honest: different levels / different interests / one moved teams. Not everyone becomes an owner in a year; the two who did were the ones who wanted a milestone, not tasks. |
-| "How did you pick who got what?" | By what they wanted to own plus where the risk was — you kept the accounting-correctness pieces early, handed them the serving and materialisation surfaces where a mistake was recoverable, then widened. |
-| "What did you do when one of them was wrong?" | Have a real example: a design or a PR you disagreed with, how you handled it (asked them to write the trade-off down, ran it in staging, let the data decide — same mechanism as S4). |
+| "Why only two of four?" | Honest: level and interest. Not everyone becomes an owner in a year; the two who did were the ones who wanted a milestone, not tasks. The other two [were productive contributors / moved to ___]. |
+| "How did you pick who got what?" | By what they wanted to own plus where the risk was — you kept the accounting-correctness pieces early, handed them surfaces where a mistake was recoverable, then widened. |
+| "What did you do when one of them was wrong?" | A real example: a design or PR you disagreed with, how you handled it (asked them to write the trade-off down, ran it in staging, let the data decide — same mechanism as S4). |
 | "Have you managed?" | "Led, not managed — no reporting line, but I planned the work, onboarded four engineers, reviewed their designs, and ran their on-call. I'd want the reporting line next if the team grows; I'm not chasing a management title." |
+
+### The failure story
+
+**Decode.** *Do you own mistakes with a cost attached, and do you fix the system rather than
+the symptom?* Hesitation here costs more than the failure. 60–90 seconds.
+
+The facts (drill): right after the 12 h → 3 h cutover, historical corrections were still
+being run as backfills **through the same pipeline**, a backfill landed in the normal run,
+and the **reporting SLA was missed**. Fix: a proper backfill SOP so backfills run without
+breaching SLA; no repeat.
+
+> "Right after we moved to the three-hour pipeline we were still correcting historical data,
+> so I was running backfills through the same pipeline in the first weeks. A backfill for a
+> large merchant landed in the normal run and we missed the reporting SLA — [how many times /
+> by how much / who noticed]. The mistake was mine: I'd treated backfills as ad hoc, when
+> they were now sharing capacity with a job that had a hard freshness commitment. The fix
+> was a backfill SOP — [what it actually said: off-peak window · size cap per run · separate
+> capacity or queue · pre-flight sizing · sign-off] — and after that we never breached SLA on
+> a backfill again. The rule I took: the moment a pipeline has an SLA, everything that shares
+> its capacity needs a runbook — including the things you think of as one-offs."
+
+**Fill:** the SLA (what number, who it was promised to), how many misses, and the three or
+four concrete rules in the SOP. Without the SOP contents this is a story about a mistake;
+with them it is a story about a system you made reliable.
+
+| They ask | You say |
+|---|---|
+| "Why did it take a miss to see it?" | Honest: the old 12-hour pipeline had so much slack that backfills were invisible; the faster pipeline removed the slack and exposed the assumption. "Every optimisation removes a margin someone was silently relying on — I now go looking for those before cutover." |
+| "What did you tell stakeholders?" | Same day, cause, fix, the SOP. Nothing hidden. |
+| "Did it happen again?" | No — and say what would have to be true for it to. |
 
 ### The planning story
 
@@ -401,7 +429,7 @@ the honest gap → how fast I close it.** Never a bare "yes" you can't defend fo
 | **ClickHouse** | "Not in production. The serving-layer decision I made at Stripe was the same decision — I chose Pinot over real-time-ingest alternatives for our recovery requirements, and tuned it to sub-second p99. Columnar, segment or part based, pre-aggregation via star-tree versus projections, replication and sharding by key — the design questions are the same; the syntax and the operational sharp edges are what I'd ramp on, and that's weeks, not quarters." Then, if you've done the reading: one specific ClickHouse thing (MergeTree ordering key ≈ sort key; materialised views for pre-agg; ReplacingMergeTree for upserts is eventual, so dedup at query time). |
 | **Redshift / BigQuery / Snowflake** | Pick one you know best from the [DE notes](../data-engineering/quick-notes.md) and speak to internals (dist/sort keys, micro-partitions + clustering, slots + partition/cluster). "I've used Trino over Iceberg as the warehouse-shaped layer; I haven't run a managed warehouse at scale." |
 | **dbt** | "The incremental-materialisation framework I built on Iceberg 1.3 is dbt's incremental model with the `merge` strategy — `MERGE INTO` on keys, only changed partitions — implemented in Spark because that's where our compute was. I know dbt's model — `ref`, tests, incremental strategies, lineage — and I'd expect to adopt it for the SQL-shaped layer here rather than rebuild it." Only if you've actually read the docs. |
-| **Terraform** | Be exact. If Stripe's infra was internal tooling: "I've provisioned through Stripe's internal IaC rather than Terraform directly. It's declarative state over resources I already understand — VPC, IAM, MSK, S3 — so it's a short ramp, and I'd rather learn your modules than bring habits." |
+| **Terraform** | The truth is **no** (drill). Say it well: "No — Stripe provisions through internal tooling, so I've never written Terraform in anger. I've operated what it provisions: S3-backed Iceberg, Kafka, Spark clusters, Trino. It's declarative state over resources I already understand; I'd expect to be productive in your modules in a couple of weeks, and I'd rather learn your conventions than bring habits." Do not pad it. |
 | **Glue / MSK / DMS / Athena** | "Operated the primitives, not the managed wrappers: S3-backed Iceberg, Kafka, CDC from Mongo, Trino — Athena is the same engine lineage. The managed services remove operational work I've done by hand, which is a good trade at your size." |
 | **Debezium** | "Our CDC was the Mongo oplog into Flink — the same change-event model. I've read Debezium's connector semantics [if true]: snapshot-then-stream, ordering guarantees per partition, tombstones and schema-change events." |
 | **Delta Lake** | "Same ACID-on-object-store idea as Iceberg; differences that matter operationally: transaction log vs manifest tree, partition evolution, and engine coupling. I'd pick Iceberg for a multi-engine estate and Delta if you're Databricks-first." |
@@ -466,21 +494,22 @@ of the roadmap — exactly the altitude they are hiring for.
 
 Ordered by cost if left open.
 
-1. **Mentoring and planning blanks** ([§I](#i-lead-level-stories)) — who the four were, the one
-   specific arc, what the two own now, the milestone list, what slipped. The skeletons exist;
-   the specifics don't.
+1. **Story blanks** ([§I](#i-lead-level-stories)) — mentoring: the three beats for one
+   execution partner and whether either took the platform over when you left; failure: the
+   SLA number and the SOP's actual rules; planning: the milestone list and what slipped.
 2. **Failure story** — real, with a cost you owned. Missing entirely; near-certain to be asked.
-3. **Numbers for the deep dive** ([§E](#e-the-platform-deep-dive)) — volume/day, change rate,
-   cluster before/after, incidents categorised, checkers shipped. Approximate and honest.
-4. **Settle the merchant number.** The PDF says **10K+**; your Google-Doc notes and the Zamp
-   prep both say **5,000+**. The PDF is what they hold; say 10K+ only if you can defend it
-   (onboarded vs. eligible vs. active?), otherwise fix the PDF before it goes anywhere else.
+3. **Fix the cost arithmetic** ([§E](#e-the-platform-deep-dive)) — 5k→8k vcores and 12 h→3 h
+   don't produce a 23% cost drop on their own; know the real reason (runs per day?). Plus
+   Pinot numbers and the incident/checker counts.
+4. **Merchant number — settled:** 10K+ *cumulative onboarded*; ~5K at public beta. Say
+   "cumulative" and the older 5K stops being a contradiction.
 5. **Do the reading you'll claim** ([§J](#j-the-gap-questions)): ClickHouse MergeTree /
    materialised views / ReplacingMergeTree; dbt incremental models; Debezium connector
    semantics; Delta vs Iceberg; Data Vault hubs/links/satellites. Two hours total. Say only
    what you've actually read.
-6. **Terraform and AWS-managed-service truth** — write down exactly what you have and haven't
-   used so the answer is instant and precise.
+6. **AWS services you touched directly** — Terraform is settled (no); list which AWS services
+   you used through Stripe's tooling (S3, MSK/Kafka, EMR-or-equivalent, RDS, Athena/Trino…)
+   so the "have you used Glue/DMS/MSK" answer is exact.
 7. **Standards story** — pick one, add how you got adoption.
 8. **dbgit walkthrough, 90 seconds**, hardest-part answer ready.
 9. **Fix the résumé nits** ([resume/README](../resume/README.md#known-nits-in-the-pdf)) before
