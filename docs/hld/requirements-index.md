@@ -65,7 +65,11 @@ Four rules, and every row below obeys them:
 ## The crux, and what each level is expected to do with it
 
 Every problem below carries a **Crux** — the one thing the problem exists to test, stated in
-a sentence — and, under the requirements table, a second table with three columns that unpack it:
+a sentence — and a **Tension** line directly under it: the two requirements that fight, in the
+form *A wants X, B wants Y, conflict because Z, resolved by W — at the cost of V*. The crux
+is what the problem tests; the tension is how you find it from the requirements in minute
+five, and the cost clause is what separates a tradeoff from a claim. Under the requirements
+table, a second table with three columns unpacks the crux:
 
 | Column | What goes in it |
 |---|---|
@@ -192,6 +196,8 @@ full requirement set and the level breakdown.
 
 **Crux** — A design small enough to finish in twenty minutes, whose entire grade is **how short codes are generated** and how the read path is served.
 
+**Tension** — **Uniqueness** wants every code checked before use. **Write throughput and `< 100 ms` redirects** want no read-before-write and no DB on the read path. Resolved by allocating codes from a counter or leased id ranges (never a lookup) and serving redirects from an edge cache — at the cost of a coordination service for ranges and a TTL-bounded window where a deleted link still redirects.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can submit a long URL and receive a shortened version<br>2. Optionally, users can specify a **custom alias** ("short.ly/my-custom-alias")<br>3. Optionally, users can specify an **expiration date**<br>4. Users can access the original URL by using the shortened URL | 1. **Uniqueness** — each short code maps to exactly one long URL<br>2. Redirection with minimal delay — **`< 100 ms`**<br>3. Reliable and available **99.99 %** of the time (availability > consistency)<br>4. Scale to **1B shortened URLs and 100M DAU**<br>5. ° Durable — a mapping is never lost<br>6. ° Read:write is heavily skewed. HI's prose says ~**1000:1** clicks per create; the notes assume 100:1 (~10k reads/s, ~100 writes/s) |
@@ -214,6 +220,8 @@ full requirement set and the level breakdown.
 
 **Crux** — The file is larger than any request, so **chunking is the design** and everything else follows from it.
 
+**Tension** — **A 50 GB file** wants to be uploaded as one durable object. **A flaky network and a metadata store that must never disagree with the blob** want small, retryable units and a commit only when everything has landed. Resolved by fixed-size chunks with fingerprints, presigned direct-to-S3 upload and a metadata commit after the last chunk — at the cost of a large chunk table and a client that owns the upload state machine.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can upload a file from any device<br>2. Users can download a file from any device<br>3. Users can share a file with other users and view the files shared with them<br>4. Users can automatically sync files across devices | 1. Highly available — **availability over consistency**<br>2. Support files as large as **50 GB**<br>3. Secure and reliable — a lost or corrupted file can be recovered<br>4. Upload, download and sync times as fast as possible (low latency)<br>5. ° The 50 GB figure is what makes chunked, **resumable** transfer a requirement rather than a deep dive<br>6. ° Sync latency is measured *save → visible on the other device*, not per request |
@@ -234,6 +242,8 @@ full requirement set and the level breakdown.
 
 **Crux** — Which **geo index**, and why the rating is precomputed rather than aggregated on read.
 
+**Tension** — **Geo search `< 500 ms`** wants an index that answers "near me" in one range scan. **Reviews and ratings** want a transactional row per user per business with an aggregate read 1000× more than it is written. Resolved by a geohash/quadtree index for search and a precomputed counter pair for the rating — at the cost of a rating that is eventually consistent and a CDC pipeline if search lives in a separate engine.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can search for businesses by **name, location (lat/long) and category**<br>2. Users can view businesses and their reviews<br>3. Users can leave reviews on businesses — mandatory 1–5 star rating, optional text | 1. Low latency for search operations — **`< 500 ms`**<br>2. Highly available; **eventual consistency is fine**<br>3. Scale to **100M daily users and 10M businesses**<br>4. **One review per user per business** — published, but as an *added constraint* the interviewer introduces for senior+ candidates, not part of the base NFR list<br>5. ° Average rating is read far more than it is written, so it is precomputed rather than aggregated on read |
@@ -253,6 +263,8 @@ full requirement set and the level breakdown.
 [notes](04-local-delivery-service.md) ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/gopuff)
 
 **Crux** — One inventory, **two paths with opposite guarantees**: a fast stale read and a transactional write.
+
+**Tension** — **Availability `< 100 ms`** wants a stale, cached union over nearby DCs. **Ordering** wants a strongly consistent decrement so two carts never claim one unit. Conflict: the same inventory rows serve both. Resolved by a precomputed availability projection that is allowed to be wrong and a conditional-write order path that is the only truth — at the cost of an occasional graceful checkout failure the product must own.
 
 | Functional | Non-functional |
 |---|---|
@@ -275,6 +287,8 @@ full requirement set and the level breakdown.
 
 **Crux** — The **hold with a TTL**, and surviving the on-sale moment when 10M people read one seat map.
 
+**Tension** — **Browsing** wants 10M reads of one seat map, fast and stale. **Booking** wants one seat → one user, serialised. Conflict: same state, opposite guarantees, at the same instant. Resolved by serving the map from cache and booking through a hold with a TTL, with a waiting room bounding what reaches the hold — at the cost of a stale map that sometimes says "available" for a seat already held, and a queue users can see.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can view events<br>2. Users can search for events<br>3. Users can book tickets to events | 1. **Availability for searching and viewing events, consistency for booking** — no double booking<br>2. Scalable to high throughput on popular events — **10 million users, one event**<br>3. Low latency search — **`< 500 ms`**<br>4. Read heavy — **100:1** — so it needs high read throughput |
@@ -294,6 +308,8 @@ full requirement set and the level breakdown.
 [notes](06-instagram.md) · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/instagram)
 
 **Crux** — **Fan-out on write versus read**, and the follower threshold where you switch.
+
+**Tension** — **Feed `< 500 ms` for 500M DAU** wants the feed precomputed on write. **Celebrity accounts** make fan-out on write 100M inbox writes per post. Conflict: fan-out writes exceed reads ~4:1 once amplified. Resolved by hybrid fan-out above a derived follower threshold with a bounded per-user feed window — at the cost of a read-time merge for celebrity posts and a backfill on deep scroll.
 
 | Functional | Non-functional |
 |---|---|
@@ -319,6 +335,8 @@ full requirement set and the level breakdown.
 
 **Crux** — Same machine as Instagram, but **unbounded follower counts make hybrid fan-out mandatory**, not optional.
 
+**Tension** — **Feed reads** want a materialised per-user list. **Unbounded follower counts at 2B users** make pure fan-out on write impossible, not merely expensive. Resolved by async queue-driven fan-out with a hard threshold above which authors are merged at read — at the cost of a per-DAU feed store you must price, and explicit invalidation on unfollow and visibility change.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can create posts<br>2. Users can friend/follow people<br>3. Users can view a feed of posts from people they follow, in **reverse-chronological order**<br>4. Users can page through their feed | 1. Highly available (availability over consistency) — tolerate **up to 1 minute of post staleness**<br>2. Posting and viewing the feed return in **`< 500 ms`**<br>3. Handle a massive number of users — **2B**<br>4. Users can follow, and be followed by, an **unlimited** number of users |
@@ -340,6 +358,8 @@ full requirement set and the level breakdown.
 
 **Crux** — Two hard things hiding behind a simple product: the **ever-growing exclusion set**, and making a mutual swipe produce exactly one match.
 
+**Tension** — **Never re-show a swiped profile** wants an exact, ever-growing seen set consulted on every card. **Candidate generation at 20M DAU × 100 swipes** wants that check to be cheap. Resolved by a precomputed candidate stack filtered through a Bloom filter — at the cost of false positives that silently hide real people, a decision the product must accept or fund a fallback for.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can create a profile with preferences (age range, interests) and specify a **maximum distance**<br>2. Users can view a stack of potential matches in line with their preferences and within max distance of their current location<br>3. Users can swipe right/left on profiles **one by one**<br>4. Users get a **match notification** if they mutually swipe on each other | 1. **Strong consistency for swiping** — if a user swipes yes on someone who already swiped yes on them, they get a match notification<br>2. Scale to **20M daily actives, ~100 swipes/user/day** on average<br>3. Load the potential-matches stack with low latency — **`< 300 ms`**<br>4. **Avoid showing profiles the user has previously swiped on**<br>5. ° That works out to ~**2B swipes/day (~25k writes/s)**<br>6. ° The stack must be **pre-fetched** so the next card is instant<br>7. ° The per-user exclusion set grows **forever** |
@@ -360,6 +380,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Running hostile code safely**, and absorbing a competition spike onto a system that is otherwise tiny.
 
+**Tension** — **Hostile code** wants the strongest isolation available. **A verdict in `< 5 s`** wants the sandbox already warm. Conflict: stronger isolation means slower start, and cold start is where the 5 s goes. Resolved by pre-warmed per-language sandbox pools with no network and hard CPU/memory/time limits — at the cost of idle capacity paid for before the competition starts.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can view a list of coding problems<br>2. Users can view a given problem and code a solution in **multiple languages**<br>3. Users can submit their solution and get **instant feedback**<br>4. Users can view a **live leaderboard** for competitions | 1. Prioritize **availability over consistency**<br>2. **Isolation and security when running user code**<br>3. Return submission results within **5 seconds**<br>4. Scale to competitions with **100,000 users**<br>5. ° HI states in prose that the corpus is tiny — a few hundred thousand users, ~4k problems — so this is *not* a storage problem<br>6. ° Competition submissions arrive as a **spike**, not a stream |
@@ -378,6 +400,8 @@ full requirement set and the level breakdown.
 [notes](10-whatsapp.md) · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/whatsapp)
 
 **Crux** — **Delivery guarantees to a client that is usually offline**, with retention as a deletion requirement.
+
+**Tension** — **Guaranteed delivery to a device offline for 30 days** wants every message stored server-side until acked. **Privacy and storage** want nothing retained. Resolved by per-recipient inbox queues with a 30-day TTL, drained and deleted on ack — at the cost of a deletion requirement as strict as the delivery one, and of end-to-end encryption removing server-side search and media dedupe if the product chooses it.
 
 | Functional | Non-functional |
 |---|---|
@@ -399,6 +423,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Offline-first**: the phone is the source of truth and the server is a sync target.
 
+**Tension** — **Works with no network** wants the phone to be the source of truth. **A server-side feed and history** want the server to be the source of truth. Resolved by treating the server as an eventually consistent sync target with idempotent, batched uploads keyed by a phone-generated activity id — at the cost of dirty input (GPS drift, clock skew, the same activity from two devices) that the server must reconcile rather than reject.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can **start, pause, stop and save** their runs and rides<br>2. While running or cycling, users can view activity data including **route, distance and time**<br>3. Users can view details about their own completed activities as well as the activities of their friends | 1. Highly available — **availability >> consistency**<br>2. **The app should function in remote areas without network connectivity**<br>3. Provide the athlete with **accurate and up-to-date local statistics** during the run/ride<br>4. Scale to **10 million concurrent activities**<br>5. ° Local stats are computed **on device**; the phone is the source of truth until it can sync |
@@ -417,6 +443,8 @@ full requirement set and the level breakdown.
 [notes](12-distributed-cache.md) ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/distributed-cache)
 
 **Crux** — Consistent hashing and **hot keys**. The LRU everyone rushes to is the easy half.
+
+**Tension** — **`< 10 ms` at 100k RPS over 1 TB** wants keys spread across many nodes. **A hot key** can exceed one node's capacity regardless of how well keys are spread. Resolved by consistent hashing with virtual nodes plus hot-key replication or a client-side short-TTL copy — at the cost of slightly stale reads on the hot key and a stampede-prevention story for rebalance and expiry.
 
 | Functional | Non-functional |
 |---|---|
@@ -438,6 +466,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Where the counter lives** given a 10 ms budget, and what the limiter does when it is itself unavailable.
 
+**Tension** — **`< 10 ms` on every one of 1M req/s** wants the decision local, no network hop. **Correctness** wants one global counter per key. Conflict: a central Redis is both the hop and the bottleneck. Resolved by local counters per node with asynchronous global reconciliation — at the cost of slight over-admission, and a fail-open policy that opens a bounded abuse window when the limiter itself is down.
+
 | Functional | Non-functional |
 |---|---|
 | 1. The system identifies clients by **user ID, IP address or API key** to apply appropriate limits<br>2. It limits HTTP requests based on **configurable rules** (e.g. 100 API requests per minute per user)<br>3. When limits are exceeded, requests are rejected with **HTTP 429** plus helpful headers — rate limit remaining, reset time | 1. **Minimal latency overhead — `< 10 ms` per request check**<br>2. Highly available; eventual consistency is ok, since slight delays in limit enforcement across nodes are acceptable<br>3. Handle **1M requests/second across 100M DAU**<br>4. ° Fails **open** — if the limiter is down, traffic passes rather than the site going down |
@@ -458,6 +488,8 @@ full requirement set and the level breakdown.
 [notes](14-online-auction.md) ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/online-auction)
 
 **Crux** — **Serializing bids on one row** while broadcasting the new price to millions, in the ten seconds where everything arrives at once.
+
+**Tension** — **Bids in the last 10 seconds** want one row serialised with no bid dropped. **Millions watching** want the price fast and slightly stale. Conflict: the same `current_max` row is the hottest write and the hottest read at the same moment. Resolved by routing all bids for an auction to a single writer with an append-only log, and pushing price over SSE — at the cost of one partition per hot auction and an outbox to keep broadcasts from lying.
 
 | Functional | Non-functional |
 |---|---|
@@ -483,6 +515,8 @@ full requirement set and the level breakdown.
 
 **Crux** — The **transcode pipeline and segmented adaptive delivery**. Upload and playback are both consequences of it.
 
+**Tension** — **A 10 GB upload** wants to be watchable in minutes. **Transcoding into a rendition ladder** is hours of work per file if done per file. Resolved by segment-level parallel transcode into HLS/DASH behind a CDN — at the cost of a job graph to operate, and a storage bill that forces cold tiers and lazy renditions for the long tail that nobody watches.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can **upload** videos<br>2. Users can **watch (stream)** videos | 1. Highly available — availability over consistency<br>2. Support uploading and streaming **large videos (10s of GBs)**<br>3. **Low-latency streaming even in low-bandwidth environments**<br>4. Scale to **~1M videos uploaded/day, 100M videos watched/day**<br>5. Support **resumable uploads**<br>6. ° Requirement 3 is what makes **adaptive bitrate** a requirement rather than an optimization |
@@ -502,6 +536,8 @@ full requirement set and the level breakdown.
 [notes](18-job-scheduler.md) · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/job-scheduler)
 
 **Crux** — Turning *fire at time T, exactly once* into **durable timers plus idempotent at-least-once execution**.
+
+**Tension** — **Fire within 2 s of due time at 10k jobs/s** wants an in-memory timer. **Durability across restarts** wants the schedule in a database. Conflict: a DB poll per second cannot hit 2 s at that rate, and memory does not survive a crash. Resolved by far-future jobs in a time-bucketed table and imminent jobs in an in-memory timer wheel, executed at-least-once with a `(job_id, fire_time)` dedupe key — at the cost of leader election per partition and an explicit skip-or-backfill policy after an outage.
 
 | Functional | Non-functional |
 |---|---|
@@ -527,6 +563,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **One write fanning out to a million sockets**, plus a backlog for viewers who arrived late.
 
+**Tension** — **Broadcast `< 200 ms`** wants every comment pushed to every viewer. **A million viewers × thousands of comments/s** is 200 GB/s out of the connection tier. Conflict: the arithmetic forbids the literal requirement. Resolved by batching and coalescing per viewer, server-side sampling on hot videos, and a dispatcher tree — at the cost of viewers not seeing every comment, which becomes a stated product rule rather than a bug.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Viewers can **post comments** on a live video feed<br>2. Viewers can see **new comments being posted** while they are watching<br>3. Viewers can see **comments made before they joined** the live feed | 1. Scale to **millions of concurrent videos and thousands of comments per second per live video**<br>2. Prioritize **availability over consistency**; eventual consistency is fine<br>3. Low latency — broadcast comments in near-real time, **`< 200 ms` end-to-end** under typical network conditions<br>4. ° A viewer joining mid-stream gets recent history without a thundering-herd read |
@@ -546,6 +584,8 @@ full requirement set and the level breakdown.
 [notes](20-news-aggregator.md) · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/google-news)
 
 **Crux** — An ingest pipeline over **sources you do not control**, feeding a read path that must survive a breaking-news spike.
+
+**Tension** — **Freshness** wants every publisher polled often. **Sources you do not control** fail, throttle and stall. Conflict: one slow publisher can stall the pipeline that serves 100M DAU. Resolved by per-publisher cadence with failure isolation, precomputed feed pages behind a cache and CDN, and request coalescing for the breaking-news spike — at the cost of stale news, which is the stated choice (stale beats none).
 
 | Functional | Non-functional |
 |---|---|
@@ -571,6 +611,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Spending a finite crawl budget well** against someone else's site, and storing 500M price series cheaply.
 
+**Tension** — **Alert within 1 h across 500M products** wants everything polled every hour. **Someone else's site and API budget** allows a tiny fraction of that. Conflict: the polling budget is the capacity. Resolved by tiered cadence by popularity, history stored as change points, and deduped alerts — at the cost of long-tail products that are checked rarely, and an anti-bot reality that makes the browser extension a data source.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can view **price history** for Amazon products, via the website or a **Chrome extension** (1M active users, one-click subscribe from the product page)<br>2. Users can **subscribe to price-drop notifications with thresholds** | 1. Prioritize **availability over consistency** — eventual consistency acceptable<br>2. Handle **500 million Amazon products** at scale<br>3. Price history queries with **`< 500 ms`** latency<br>4. Deliver price-drop notifications **within 1 hour** of a price change<br>5. ° HI frames the system as needing to be **"polite" to Amazon** — crawl budget is finite, so poll popular products often and the long tail rarely |
@@ -593,6 +635,8 @@ full requirement set and the level breakdown.
 
 **Crux** — Reconciling **exact counting with 700k events/s and a tens-of-milliseconds read** by splitting aggregation from serving.
 
+**Tension** — **Exactness** wants every view counted, no sketch. **~1M views/s with a tens-of-ms read** cannot be counted in the serving store or sorted at query time. Resolved by splitting aggregation from serving: exact per-minute counts in a stream, rolled into fixed windows, top-K materialised per window and served as a cache read — at the cost of one minute of staleness and no arbitrary time ranges.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Clients can query the **top K videos for all time** (up to a max of **1k results**)<br>2. Clients can query **tumbling windows of 1 hour, 1 day and 1 month**, and all-time (max 1k results) | 1. Tolerate at most **1 minute** delay between when a view occurs and when it is tabulated<br>2. **Results must be precise — no approximation** (HI revisits approximation only in the deep dives)<br>3. Return results within **tens of milliseconds**<br>4. Handle a massive number of views/s, and support a massive number of videos — HI leaves both **explicitly TBD** and estimates them later<br>5. ° The notes fill the TBDs in: ~70B views/day ≈ **700k views/s**, ~1M new videos/day, ~64 GB of all-time counters |
@@ -613,6 +657,8 @@ full requirement set and the level breakdown.
 
 **Crux** — Matching as a **serialised decision over a geospatial index that is rewritten every few seconds**.
 
+**Tension** — **Matching** wants a serialised decision so one driver never gets two rides. **The geo index** is rewritten every few seconds by 100k moving drivers. Conflict: locking over a structure that churns that fast is either stale or slow. Resolved by an in-memory non-durable location index and a single-writer guard per driver with an offer timeout — at the cost of a greedy nearest-driver match unless you batch per region and solve an assignment, which changes the architecture.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Riders can input a start location and a destination and get a **fare estimate**<br>2. Riders can request a ride based on the estimated fare<br>3. Upon request, riders are **matched with a driver** who is nearby and available<br>4. Drivers can accept/decline a request and navigate to pickup/drop-off | 1. **Low latency matching — `< 1 minute` to match or failure**<br>2. **Strong consistency in ride matching** — no driver is assigned multiple rides simultaneously<br>3. High throughput, especially during peak hours or special events — **100k requests from the same location**<br>4. ° Driver location updates stream continuously (~every 5 s per active driver): a write-heavy firehose whose freshness requirement is seconds and whose durability requirement is **none** |
@@ -632,6 +678,8 @@ full requirement set and the level breakdown.
 [notes](24-robinhood.md) ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/robinhood)
 
 **Crux** — **Two systems sharing a login**: a lossy price fan-out and a lossless order ledger.
+
+**Tension** — **Prices** want fan-out to 20M clients from one costly feed — lossy is fine. **Orders** want a lossless ledger — nothing dropped, nothing duplicated. Conflict: one app, one login, two opposite durability guarantees. Resolved by two systems: conflated pub/sub for prices and a durable log with a state machine and idempotency key for orders — at the cost of a stale-price policy that compliance, not engineering, must decide.
 
 | Functional | Non-functional |
 |---|---|
@@ -660,6 +708,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Convergence**: OT or CRDT, with the server as a sequencer rather than a lock manager.
 
+**Tension** — **Instant local echo** wants every keystroke applied before the server answers. **Convergence across 100 editors** wants a single order of operations. Conflict: locks would kill the first, no coordination would kill the second. Resolved by OT with the server as sequencer (or a CRDT) and local-apply-then-transform — at the cost of one owning process per document that must fail over by replaying the log, and an undo semantics that has to be defined.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can create new documents<br>2. **Multiple users can edit the same document concurrently**<br>3. Users can view each other's changes in real time<br>4. Users can see the cursor position and presence of other users | 1. Documents should be **eventually consistent** — all users eventually see the same document state<br>2. Updates should be low latency — **`< 100 ms`**<br>3. Scale to **millions of concurrent users across billions of documents**<br>4. **No more than 100 concurrent editors per document**<br>5. Documents are **durable and available** even if the server restarts<br>6. ° Local edits echo **instantly** — optimistic, applied before the server replies<br>7. ° Presence and cursors are **lossy and cheap**: a weaker channel than edits |
@@ -686,6 +736,8 @@ full requirement set and the level breakdown.
 
 **Crux** — Politeness caps **per-host** throughput, so aggregate throughput comes only from breadth — and the crawl must resume.
 
+**Tension** — **25k pages/s aggregate** wants maximum fetch concurrency. **Politeness** caps every single host. Conflict: throughput can come only from breadth, never depth. Resolved by front (priority) and back (per-host) queues over a checkpointed frontier — at the cost of a crawl budgeted on bandwidth and storage (≈ 20 Gbps, ≈ 1 PB of HTML) rather than CPU.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Crawl the web starting from a given set of **seed URLs**<br>2. **Extract text data** from each web page and store the text for later processing | 1. **Fault tolerance** — handle failures gracefully and resume crawling without losing progress<br>2. **Politeness** — adhere to `robots.txt` and do not overload website servers<br>3. **Efficiency** — crawl the web in **under 5 days**<br>4. **Scalability** — handle **10B pages** (~2 MB/page transfer including inline resources; HTML alone is ~30 KB)<br>5. ° Duplicate detection on both URL **and content** — the web is full of mirrors<br>6. ° Traps, redirect loops and infinite calendars must not starve the frontier |
@@ -705,6 +757,8 @@ full requirement set and the level breakdown.
 [notes](27-ad-click-aggregator.md) · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/ad-click-aggregator)
 
 **Crux** — **Lossless, idempotent ingest** feeding a fast approximate view and a slower authoritative one.
+
+**Tension** — **No click lost, no click counted twice** wants a durable, deduped write on the critical path. **A fast redirect** wants nothing on the critical path. Resolved by stamping a `click_id`, redirecting immediately, and logging asynchronously to a replicated stream aggregated with idempotent upserts — at the cost of minutes of freshness and a batch recount alongside the stream, because this is billing data and the two must reconcile.
 
 | Functional | Non-functional |
 |---|---|
@@ -726,6 +780,8 @@ full requirement set and the level breakdown.
 
 **Crux** — An inverted index that must absorb **100k mutating like counts per second** without reindexing documents.
 
+**Tension** — **Searchable within 1 min, sortable by engagement** wants like counts in the index. **100k likes/s** would mean 100k document re-indexes per second. Conflict: no inverted index survives that. Resolved by keeping the like count out of the document as a periodically merged score, with hot recent shards and cold archive shards — at the cost of an engagement sort that lags by the merge interval.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Users can **create and like posts**<br>2. Users can **search posts by keyword**<br>3. Users can get search results sorted by **recency or like count** | 1. Must be fast — **median queries return in `< 500 ms`**<br>2. Support a high volume of requests — HI estimates **10k posts/s, 100k likes/s, 10k searches/s** from 1B users, which makes this **write-heavy, not read-heavy**<br>3. New posts must be searchable in a short amount of time — **`< 1 minute`**<br>4. **All posts must be discoverable**, including old or unpopular ones — and we can take more time for those<br>5. Highly available<br>6. ° Ten years of posts ≈ **3.6T documents, ~3.6 PB raw** — so the index, not the query, is the problem |
@@ -746,6 +802,8 @@ full requirement set and the level breakdown.
 [notes](29-payment-system.md) · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/payment-system)
 
 **Crux** — **Idempotency, a state machine and reconciliation.** Money makes correctness the feature.
+
+**Tension** — **Never double-charge** wants every retry to be a no-op. **An asynchronous, unreliable processor** makes a timeout mean "maybe charged". Conflict: you cannot know whether to retry. Resolved by client idempotency keys, an explicit state machine, and querying the processor by key before any retry — at the cost of a double-entry ledger and three-way reconciliation, because a status column cannot answer a dispute.
 
 | Functional | Non-functional |
 |---|---|
@@ -772,6 +830,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **One ingest path, two guarantees**: dashboards may be stale, alert evaluation may not.
 
+**Tension** — **Dashboards** want cheap, stale, rolled-up reads over weeks of data. **Alerts** want every raw point, on time, in order, within a minute. Conflict: same ingest, and the storage shape that makes one cheap makes the other unreliable. Resolved by one write path fanning to two consumers — a TSDB with rollups for queries, an in-memory windowed evaluator for alerts — at the cost of operating the evaluator as its own tier, and cardinality bounded at ingest because it is what actually kills the system.
+
 | Functional | Non-functional |
 |---|---|
 | 1. The platform can **ingest metrics** — CPU, memory, latency, custom counters — from services<br>2. Users can **query and visualize metrics on dashboards** with filters, aggregations and time ranges<br>3. Users can define **alert rules with thresholds over time windows** ("alert if p99 latency > 500 ms for 5 minutes")<br>4. Users **receive notifications** when alerts fire — email, Slack, PagerDuty | 1. Scale to ingest **5M metrics/s from 500k servers** — ~100–200 bytes per point ≈ **1 GB/s of raw ingestion**<br>2. Dashboard queries return **within seconds**, even for queries spanning days or weeks<br>3. Alerts evaluate with low latency — **`< 1 minute` from metric emission to alert firing**<br>4. Highly available; **eventual consistency is tolerable for dashboards, but alert evaluation must be reliable**<br>5. Handle **late or out-of-order data** gracefully — network delays are common<br>6. ° Cardinality is the real scaling limit — bound it explicitly |
@@ -792,6 +852,8 @@ full requirement set and the level breakdown.
 [notes](31-online-chess.md) ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/online-chess)
 
 **Crux** — **Stateful, sticky, server-authoritative sessions** — the rare problem in this set where the server holds live state — plus a rank over 10M players.
+
+**Tension** — **Move `< 200 ms` with a server-authoritative clock** wants game state in memory on one owning server. **Reliability** wants that state to survive the server. Conflict: a stateful, sticky session is the rare shape in this set. Resolved by in-memory state journalled per move and failed over by replay, with the connection tier separated from game logic — at the cost of a pause on failover (pause, don't diverge) and a latency-fairness policy that must be stated.
 
 | Functional | Non-functional |
 |---|---|
@@ -819,6 +881,8 @@ full requirement set and the level breakdown.
 [notes](32-chatgpt.md) ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/chatgpt)
 
 **Crux** — **GPU scheduling.** Strip that away and this is an ordinary CRUD application with streaming.
+
+**Tension** — **TTFT `< ~500 ms` for 20k prompts/s** wants a GPU available the instant a prompt arrives. **Fixed GPU supply** rationed across free, Plus and Pro tiers wants queues. Conflict: the scarce resource is the system. Resolved by continuous batching, KV-cache reuse, and admission control with tiered fairness — at the cost of degrading to a smaller model or shorter context instead of failing, a policy the business sets.
 
 | Functional | Non-functional |
 |---|---|
@@ -848,6 +912,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Fairness and at-least-once delivery across third parties you do not control.**
 
+**Tension** — **A 5k/s campaign blast** and **an OTP with a 5 s budget** enter the same pipeline. Conflict: priority ordering in one queue is not isolation — the blast still delays the OTP. Resolved by separate pipelines with separate quotas per priority, a dedupe key carried end to end, and per-provider circuit breakers — at the cost of two systems to operate and a per-channel cost the business can see.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Upstream services can send a notification to a user via **push, email or SMS**, either immediately or in the future<br>2. Upstream services can send **campaigns** — the same message delivered to a whole segment of users, immediately or scheduled<br>3. Users can set notification preferences — channel opt-outs and quiet hours | 1. **At-least-once delivery with best-effort deduplication** — better to send a notification twice accidentally than never at all<br>2. Handle **surges of ~5,000 notifications per second** — 10M/day is ~100/s sustained, so the surge is roughly **50×**<br>3. **High-priority notifications (OTPs, security alerts) delivered within 5 s of acceptance, even during a surge**<br>4. ° Per-provider **failure isolation** with retry and backoff — one vendor outage degrades one channel<br>5. ° Scheduled sends fire within a minute of their time, in the user's timezone and outside quiet hours<br>6. ° Preferences are enforced at send time and are authoritative — a suppressed send is a success, not a failure |
@@ -876,6 +942,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Rank, not top-N.** The top ten is cacheable; *my position among 100M* is the query that hurts.
 
+**Tension** — **Top-N** wants a cached list. **My rank among 100M** wants a sorted structure consulted per player at 10k writes/s. Conflict: one enormous hot sorted set answers both, badly. Resolved by a sorted set per window as a derived index over a durable score log, with bucketed counts for rank on the long tail — at the cost of approximate rank below the top, stated as the product rule.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Players submit a score at the end of a match<br>2. Anyone can read the **top N** globally and per window — daily, weekly, all-time<br>3. A player can see **their own rank** and the handful of players around them | 1. Top-N read `< 50 ms` at 1M concurrent viewers — it is cached and read far more than written<br>2. **10k score writes/s**, 100M players<br>3. A score is reflected in the rank within **seconds**<br>4. Ties break deterministically (earlier timestamp wins) so ranks are stable between reads<br>5. Window rollover (midnight daily, Monday weekly) happens **without a read outage** — the new window starts empty while the old one is still served |
@@ -898,6 +966,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Retrieval quality and ingestion durability.** The LLM call is the least interesting part.
 
+**Tension** — **Answer quality** wants rich retrieval — hybrid, reranked, document-aware chunks. **Latency and cost per query** want one cheap vector lookup. Conflict: every retrieval improvement is a slower, dearer query. Resolved by hybrid retrieval with a reranker and evaluation as the deliverable (golden set, recall@k, groundedness) — at the cost of a durable per-document ingestion workflow and the discipline to say when RAG is the wrong tool.
+
 | Functional | Non-functional |
 |---|---|
 | 1. An API to **upload and update documents**<br>2. Ingestion parses, chunks, embeds and indexes each document, with per-document status visible<br>3. A user query returns a grounded answer **with citations** to the retrieved chunks<br>4. Feedback on answers is captured and improves retrieval | 1. First token `< 1 s`, full answer in a few seconds; the retrieval budget inside that is ~100 ms<br>2. Highly available, eventually consistent — a newly uploaded document becomes searchable within **minutes**<br>3. Ingestion is **resumable per stage**: a failure in embedding does not re-parse a 400-page PDF (this is what [36. Durable Execution](#36-durable-execution-engine) is for)<br>4. Every claim in the answer is **attributable** to a retrieved chunk — no citation, no sentence<br>5. Cost per tenant is bounded: embedding and generation spend are metered and capped<br>6. Deleting a document removes it from retrieval promptly — the compliance requirement |
@@ -917,6 +987,8 @@ full requirement set and the level breakdown.
 [notes](36-durable-execution-engine.md) · no breakdown · ★
 
 **Crux** — **State is rebuilt by deterministic replay of an event history** — the whole system is that one idea, defended.
+
+**Tension** — **Millions of open, mostly idle executions** want state off the worker. **Exactly-once state transitions over months** want state that can be reconstructed precisely. Resolved by an event-sourced history replayed deterministically to rebuild state, with workers polling and activities at-least-once behind idempotency keys — at the cost of determinism and versioning rules for changing workflow code while executions are in flight, and continue-as-new to bound history.
 
 | Functional | Non-functional |
 |---|---|
@@ -938,6 +1010,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **The trust boundary.** The model proposes, the harness disposes, and everything between is policy.
 
+**Tension** — **Agent capability** wants the model to act freely with rich context. **The model never executes anything** wants every action mediated by policy. Conflict: every permission check is friction; every skipped check is a trust-boundary hole. Resolved by a typed tool protocol behind a per-call permission layer, with the harness owning context construction — at the cost of resent input tokens managed by caching and compaction, and a threat model for hostile tool servers.
+
 | Functional | Non-functional |
 |---|---|
 | 1. A multi-turn terminal session: user text in, model text **and actions** out<br>2. Execute actions **locally** — read/write files, run commands, search the repo<br>3. An **extensible** tool surface (MCP): third parties add tools without releasing the host<br>4. **Permission policy** per tool call — ask, allow, deny, allowlist by pattern<br>5. Session **persistence and resume**; a crash must not lose the transcript<br>6. **Subagents** with their own context windows, and **hooks** — deterministic user code on lifecycle points<br>7. Work usefully in a repo far larger than the context window | 1. **The model never executes anything** — it only emits typed requests<br>2. No file leaves the machine except what the harness deliberately puts in the prompt<br>3. A hostile or buggy tool server cannot take over the session<br>4. Tool round trips are the latency floor; the model call is the ceiling<br>5. Cost is dominated by **input** tokens — the same context is resent every turn<br>6. Session state is a local append-only transcript, replayable<br>7. Adding a tool must not require touching the loop |
@@ -957,6 +1031,8 @@ full requirement set and the level breakdown.
 [notes](38-metrics-aggregation-platform.md) · no breakdown · ★
 
 **Crux** — **Correctness on data you pull from APIs you do not own**, under a rate-limit budget that is the real capacity constraint.
+
+**Tension** — **Fresh, correct metrics for 10k tenants** want every provider API pulled often. **Provider rate limits** are the real capacity and you do not set them. Conflict: freshness and backfill compete for the same budget. Resolved by a per-connection scheduler with quota, raw responses retained for repair without re-fetching, and idempotent window upserts — at the cost of tiered freshness SLOs instead of one honest number, and versioned facts so restatements are auditable.
 
 | Functional | Non-functional |
 |---|---|
@@ -979,6 +1055,8 @@ full requirement set and the level breakdown.
 
 **Crux** — It is a **ranking and freshness problem at 220k QPS inside a 50 ms budget**, not a trie exercise.
 
+**Tension** — **p99 `< 50 ms` at 220k QPS** wants nothing synchronous on the request path. **Freshness** — especially removals — wants the index updated now. Conflict: any live ranking blows the budget; any stale index shows what must be removed. Resolved by precomputed top-K per prefix with a denylist fast path at the edge for removals — at the cost of additions being minutes stale and an exploration policy to break the popularity feedback loop.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Given a prefix, return the **top K = 10** suggestions by relevance<br>2. Candidates come from **multiple verticals** — query logs, a product catalogue, the user's own history<br>3. Match **mid-query**, not only from the first character<br>4. **Typo tolerance**<br>5. **Trending** — a query spiking now appears within minutes<br>6. **Personalization and context** — history, locale, session, category scope<br>7. **Catalogue fidelity** — a delisted product stops being suggested quickly<br>8. **Suppression** — unsafe, defamatory or PII-bearing strings never appear; takedowns apply within seconds<br>9. The system **improves from its own usage**, auditably | 1. **p99 `< 50 ms` server, `< 100 ms` end to end** — a perceptual budget that includes the network<br>2. **~220k peak QPS** — 6× your search traffic, derived not assumed<br>3. **99.99 % with graceful degradation** — a shorter or staler list is fine, a slow one is worse than none<br>4. **Asymmetric freshness**: trending and new products `≤ 5 min`, **removals `≤ 30 s`**<br>5. **Read-only serving path** — no synchronous writes, no database on the request path<br>6. Relevance is measurable — offline replay plus online interleaving<br>7. Multi-language, multi-script, multi-marketplace |
@@ -1000,6 +1078,8 @@ full requirement set and the level breakdown.
 
 **Crux** — **Choosing the indexing unit**, and holding two different SLOs for two different query shapes.
 
+**Tension** — **Top-K in `< 200 ms`** wants a small shard fan-out and a fast refresh. **All documents discoverable, exhaustively** wants every shard consulted and nothing missed. Conflict: two query shapes, one index. Resolved by document-per-file indexing on a derived, rebuildable index, with exhaustive queries served through a point-in-time cursor under a weaker SLO — at the cost of a stated visibility lag and shard sizing against scatter-gather tail latency.
+
 | Functional | Non-functional |
 |---|---|
 | 1. Index documents made of text lines, with metadata (path, author, repo, mtime, tags)<br>2. `search(query) → documents` containing the query<br>3. Query forms: term, **phrase**, boolean, prefix/wildcard, field-scoped<br>4. **Per-document evidence** — which lines matched, highlighted<br>5. Metadata filters combinable with the text query<br>6. Return **all** matches (paginated or streamed) **or** the top K — caller's choice<br>7. Documents are created, updated and deleted; the index tracks them | 1. **p99 `< 200 ms`** for a top-K query over **100M documents**<br>2. Exhaustive retrieval of a 1M-document result set completes without destabilising the cluster — an explicitly weaker SLO<br>3. **Near-real-time**: searchable within ~1 s of indexing<br>4. **5k docs/s** sustained indexing, 10× during a bulk reindex<br>5. The index is **derived and rebuildable** — losing it is an availability incident, never data loss<br>6. Result sets are **stable across pagination** — no duplicates, no skips |
@@ -1020,6 +1100,8 @@ full requirement set and the level breakdown.
 ⌀ · [breakdown](https://www.hellointerview.com/learn/system-design/problem-breakdowns/flash-sale)
 
 **Crux** — **Admission control.** Ten million requests must not reach the inventory row at all.
+
+**Tension** — **Millions of requests in seconds** want to reach the inventory row. **Never oversell, demonstrably fairly** wants that row touched by a bounded, ordered trickle. Conflict: the arrival rate and the row's capacity differ by orders of magnitude. Resolved by admission control — a waiting room issuing signed tokens, an in-memory atomic counter as the gate, orders persisted asynchronously — at the cost of a queue users can see, bot mitigation as a first-class requirement, and a rule for who lies when gate and ledger disagree.
 
 | Functional | Non-functional |
 |---|---|
