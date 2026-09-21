@@ -13,6 +13,8 @@ original whiteboard diagrams rendered alongside.
 | **[Diagrams](diagrams/README.md)** | 19 renders + editable `.excalidraw` sources | |
 | **[Data engineering](data-engineering/README.md)** | [Lead DE quick notes](data-engineering/quick-notes.md) — fundamentals checklist, sessionization, deterministic ids, RAND/salting, DE-style LLD | |
 | **[Zamp](zamp/README.md)** | [R2 system design round](zamp/01-r2-system-design-round.md) — format, likely briefs, interviewers | [CEO / behavioral round](zamp/02-behavioral-round.md) — "spikes", the career arc, worked answers |
+| **[FinBox](finbox/README.md)** | [Hiring manager round](finbox/01-hm-round.md) — Lead DE: JD → evidence map, why leaving / why FinBox, gap questions, first 90 days | |
+| **[Résumé](resume/README.md)** | [2026 PDF](resume/Varun_Mundale_2026.pdf) + markdown transcription — the canonical numbers | |
 | **Code** | [Temporal SDK example](../src/main/java/org/example/temporal/README.md) — Uber ride dispatch, durable execution, runnable | [Pinot segment replace](../src/main/scala/com/revrec/pinot/README.md) — Spark job |
 
 ## Standalone designs
@@ -32,6 +34,8 @@ docs/
   appendix/    hld.md, lld.md, cheat sheets            + README.md index
   diagrams/    PNG renders, excalidraw/ scene sources  + README.md index
   zamp/        company-specific interview prep         + README.md index
+  finbox/      company-specific interview prep         + README.md index
+  resume/      current résumé, PDF + markdown          (README.md is the transcription)
   data-engineering/  DE interview prep + reference notes + README.md index
 ```
 
