@@ -11,7 +11,8 @@ original whiteboard diagrams rendered alongside.
 | **[Appendix](appendix/README.md)** | [HLD](appendix/hld.md) — consistency models, Elasticsearch, Cassandra, Kafka, Redis, Iceberg, Pinot | [LLD](appendix/lld.md) — concurrency, task execution engine |
 | **[Playbooks](appendix/README.md#playbooks)** | [Scaling strategies](appendix/scaling-strategies.md) — caching, sharding, load balancing | [Database decision list](appendix/database-decision-list.md) — which store, and which keys |
 | **[Diagrams](diagrams/README.md)** | 19 renders + editable `.excalidraw` sources | |
-| **[Data engineering](data-engineering/README.md)** | [Lead DE quick notes](data-engineering/quick-notes.md) — fundamentals checklist, sessionization, deterministic ids, RAND/salting, DE-style LLD | |
+| **[LeetCode](leetcode/README.md)** | [Quick index](leetcode/index.md) — 198 solved by pattern, attempts, ⚠️ re-drill list | [Quick notes](leetcode/notes.md) — crux + pitfalls/traps/edge cases per problem, recurring-traps table, handwritten notes folded in |
+| **[Data engineering](data-engineering/README.md)** | [Lead DE quick notes](data-engineering/quick-notes.md) — fundamentals checklist, sessionization, deterministic ids, RAND/salting, DE-style LLD | [Data modelling](data-engineering/data-modelling.md) — star, Data Vault 2.0, OBT, worked lending model |
 | **[Zamp](zamp/README.md)** | [R2 system design round](zamp/01-r2-system-design-round.md) — format, likely briefs, interviewers | [CEO / behavioral round](zamp/02-behavioral-round.md) — "spikes", the career arc, worked answers |
 | **[FinBox](finbox/README.md)** | [Hiring manager round](finbox/01-hm-round.md) — Lead DE: JD → evidence map, why leaving / why FinBox, gap questions, first 90 days | |
 | **[Résumé](resume/README.md)** | [2026 PDF](resume/Varun_Mundale_2026.pdf) + markdown transcription — the canonical numbers | |
@@ -37,6 +38,7 @@ docs/
   finbox/      company-specific interview prep         + README.md index
   resume/      current résumé, PDF + markdown          (README.md is the transcription)
   data-engineering/  DE interview prep + reference notes + README.md index
+  leetcode/    solved-problem index + crux/pitfall notes + data/ (raw export)
 ```
 
 Every diagram ships as a PNG plus its `.excalidraw` scene under

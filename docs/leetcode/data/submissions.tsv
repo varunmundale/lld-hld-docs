@@ -1,0 +1,199 @@
+id	title	slug	diff	tags	subs	ac	wa	tle	other	langs	first	lastAC	runtime	codelang
+1	Two Sum	two-sum	E	Array|Hash Table	1	1	0	0	0	cpp	2017-08-08	2017-08-08	116 ms	cpp
+2	Add Two Numbers	add-two-numbers	M	Linked List|Math|Recursion	2	2	0	0	0	java	2026-07-23	2026-07-23	1 ms	java
+3	Longest Substring Without Repeating Characters	longest-substring-without-repeating-characters	M	Hash Table|String|Sliding Window	1	1	0	0	0	java	2025-07-25	2025-07-25	7 ms	java
+5	Longest Palindromic Substring	longest-palindromic-substring	M	Two Pointers|String|Dynamic Programming|Manacher	1	1	0	0	0	java	2025-07-23	2025-07-23	20 ms	java
+6	Zigzag Conversion	zigzag-conversion	M	String	3	2	0	0	1	java	2026-06-30	2026-07-23	40 ms	java
+7	Reverse Integer	reverse-integer	M	Math	3	1	2	0	0	java	2026-07-23	2026-07-23	2 ms	java
+9	Palindrome Number	palindrome-number	E	Math	1	1	0	0	0	java	2025-07-26	2025-07-26	5 ms	java
+11	Container With Most Water	container-with-most-water	M	Array|Two Pointers|Greedy	4	4	0	0	0	java	2025-05-24	2026-07-23	3 ms	java
+12	Integer to Roman	integer-to-roman	M	Hash Table|Math|String	1	1	0	0	0	java	2026-07-02	2026-07-02	21 ms	java
+13	Roman to Integer	roman-to-integer	E	Hash Table|Math|String	2	2	0	0	0	java	2026-06-24	2026-07-23	7 ms	java
+15	3Sum	3sum	M	Array|Two Pointers|Sorting	3	2	1	0	0	java	2026-06-22	2026-07-23	607 ms	java
+17	Letter Combinations of a Phone Number	letter-combinations-of-a-phone-number	M	Hash Table|String|Backtracking	3	3	0	0	0	java	2025-05-17	2026-07-23	3 ms	java
+19	Remove Nth Node From End of List	remove-nth-node-from-end-of-list	M	Linked List|Two Pointers	1	1	0	0	0	java	2025-07-27	2025-07-27	0 ms	java
+20	Valid Parentheses	valid-parentheses	E	String|Stack|Bracket Sequences	1	1	0	0	0	java	2025-07-27	2025-07-27	2 ms	java
+21	Merge Two Sorted Lists	merge-two-sorted-lists	E	Linked List|Recursion	1	1	0	0	0	java	2025-07-25	2025-07-25	0 ms	java
+22	Generate Parentheses	generate-parentheses	M	String|Dynamic Programming|Backtracking|Bracket Sequences	3	1	2	0	0	java|cpp	2017-02-16	2026-07-21	27 ms	java
+23	Merge k Sorted Lists	merge-k-sorted-lists	H	Linked List|Divide and Conquer|Heap (Priority Queue)|Merge Sort|Tournament Sort	2	2	0	0	0	java	2026-07-23	2026-07-23	4 ms	java
+25	Reverse Nodes in k-Group	reverse-nodes-in-k-group	H	Linked List|Recursion	2	2	0	0	0	java	2026-07-23	2026-07-23	0 ms	java
+26	Remove Duplicates from Sorted Array	remove-duplicates-from-sorted-array	E	Array|Two Pointers	2	2	0	0	0	java	2025-07-25	2026-06-22	1 ms	java
+28	Find the Index of the First Occurrence in a String	find-the-index-of-the-first-occurrence-in-a-string	E	Two Pointers|String|String Matching|Z Algorithm|Knuth–Morris–Pratt Algorithm|Boyer–Moore String-Search Algorithm	10	3	4	1	2	java|cpp	2017-11-19	2018-05-09	10 ms	cpp
+30	Substring with Concatenation of All Words	substring-with-concatenation-of-all-words	H	Hash Table|String|Sliding Window	4	1	2	0	1	java	2025-04-27	2025-04-27	21 ms	java
+33	Search in Rotated Sorted Array	search-in-rotated-sorted-array	M	Array|Binary Search	1	1	0	0	0	java	2026-07-06	2026-07-06	0 ms	java
+34	Find First and Last Position of Element in Sorted Array	find-first-and-last-position-of-element-in-sorted-array	M	Array|Binary Search	1	1	0	0	0	java	2026-06-30	2026-06-30	0 ms	java
+36	Valid Sudoku	valid-sudoku	M	Array|Hash Table|Matrix	4	2	2	0	0	java	2026-07-23	2026-07-23	3 ms	java
+39	Combination Sum	combination-sum	M	Array|Backtracking	1	1	0	0	0	java	2026-07-23	2026-07-23	3 ms	java
+42	Trapping Rain Water	trapping-rain-water	H	Array|Two Pointers|Dynamic Programming|Stack|Monotonic Stack	1	1	0	0	0	java	2026-07-23	2026-07-23	1 ms	java
+43	Multiply Strings	multiply-strings	M	Math|String|Simulation	2	1	1	0	0	java	2025-04-27	2025-04-27	19 ms	java
+45	Jump Game II	jump-game-ii	M	Array|Dynamic Programming|Greedy	1	1	0	0	0	java	2026-07-24	2026-07-24	107 ms	java
+46	Permutations	permutations	M	Array|Backtracking	1	1	0	0	0	java	2026-07-06	2026-07-06	3 ms	java
+49	Group Anagrams	group-anagrams	M	Array|Hash Table|String|Sorting	1	1	0	0	0	java	2025-05-24	2025-05-24	22 ms	java
+50	Pow(x, n)	powx-n	M	Math|Recursion	2	1	0	0	1	java	2026-07-20	2026-07-20	0 ms	java
+51	N-Queens	n-queens	H	Array|Backtracking|Algorithm X	1	1	0	0	0	java	2026-07-24	2026-07-24	4 ms	java
+53	Maximum Subarray	maximum-subarray	M	Array|Divide and Conquer|Dynamic Programming	3	1	2	0	0	java	2025-08-12	2025-08-12	5 ms	java
+55	Jump Game	jump-game	M	Array|Dynamic Programming|Greedy	1	1	0	0	0	java	2026-07-24	2026-07-24	1492 ms	java
+56	Merge Intervals	merge-intervals	M	Array|Sorting|Quicksort	1	1	0	0	0	java	2025-06-06	2025-06-06	14 ms	java
+61	Rotate List	rotate-list	M	Linked List|Two Pointers	1	1	0	0	0	java	2025-07-25	2025-07-25	0 ms	java
+62	Unique Paths	unique-paths	M	Math|Dynamic Programming|Combinatorics	2	2	0	0	0	java	2025-07-14	2026-05-21	0 ms	java
+63	Unique Paths II	unique-paths-ii	M	Array|Dynamic Programming|Matrix	3	1	2	0	0	java	2026-07-20	2026-07-20	0 ms	java
+64	Minimum Path Sum	minimum-path-sum	M	Array|Dynamic Programming|Matrix	1	1	0	0	0	java	2025-07-19	2025-07-19	1 ms	java
+67	Add Binary	add-binary	E	Math|String|Bit Manipulation|Simulation	1	1	0	0	0	java	2025-07-25	2025-07-25	2 ms	java
+70	Climbing Stairs	climbing-stairs	E	Math|Dynamic Programming|Memoization	1	1	0	0	0	java	2025-07-29	2025-07-29	0 ms	java
+71	Simplify Path	simplify-path	M	String|Stack	1	1	0	0	0	java	2025-04-27	2025-04-27	5 ms	java
+72	Edit Distance	edit-distance	M	String|Dynamic Programming	8	5	3	0	0	java	2025-02-09	2026-09-22	3 ms	java
+74	Search a 2D Matrix	search-a-2d-matrix	M	Array|Binary Search|Matrix	2	2	0	0	0	java	2026-07-01	2026-07-23	0 ms	java
+76	Minimum Window Substring	minimum-window-substring	H	Hash Table|String|Sliding Window	2	2	0	0	0	java	2026-06-24	2026-07-23	24 ms	java
+77	Combinations	combinations	M	Backtracking	1	1	0	0	0	java	2025-07-25	2025-07-25	18 ms	java
+78	Subsets	subsets	M	Array|Backtracking|Bit Manipulation	1	1	0	0	0	java	2026-08-16	2026-08-16	1 ms	java
+82	Remove Duplicates from Sorted List II	remove-duplicates-from-sorted-list-ii	M	Linked List|Two Pointers	3	2	1	0	0	java	2026-07-02	2026-07-23	1 ms	java
+84	Largest Rectangle in Histogram	largest-rectangle-in-histogram	H	Array|Stack|Monotonic Stack|Range Minimum/Maximum Query	2	1	1	0	0	java	2026-06-19	2026-06-19	100 ms	java
+86	Partition List	partition-list	M	Linked List|Two Pointers	1	1	0	0	0	java	2026-07-02	2026-07-02	0 ms	java
+98	Validate Binary Search Tree	validate-binary-search-tree	M	Tree|Depth-First Search|Binary Search Tree|Binary Tree	2	1	1	0	0	java	2025-07-19	2025-07-19	1 ms	java
+102	Binary Tree Level Order Traversal	binary-tree-level-order-traversal	M	Tree|Breadth-First Search|Binary Tree	1	1	0	0	0	java	2025-09-02	2025-09-02	2 ms	java
+103	Binary Tree Zigzag Level Order Traversal	binary-tree-zigzag-level-order-traversal	M	Tree|Breadth-First Search|Binary Tree	2	1	0	0	1	cpp	2017-11-28	2017-11-28	6 ms	cpp
+104	Maximum Depth of Binary Tree	maximum-depth-of-binary-tree	E	Tree|Depth-First Search|Breadth-First Search|Binary Tree	3	3	0	0	0	java	2025-04-24	2026-07-23	0 ms	java
+105	Construct Binary Tree from Preorder and Inorder Traversal	construct-binary-tree-from-preorder-and-inorder-traversal	M	Array|Hash Table|Divide and Conquer|Tree|Binary Tree	2	1	1	0	0	java	2025-08-12	2025-08-12	2 ms	java
+108	Convert Sorted Array to Binary Search Tree	convert-sorted-array-to-binary-search-tree	E	Array|Divide and Conquer|Tree|Binary Search Tree|Binary Tree	1	1	0	0	0	java	2025-07-25	2025-07-25	0 ms	java
+110	Balanced Binary Tree	balanced-binary-tree	E	Tree|Depth-First Search|Binary Tree	5	1	3	0	1	java	2024-08-04	2024-08-04	35 ms	java
+112	Path Sum	path-sum	E	Tree|Depth-First Search|Breadth-First Search|Binary Tree	1	1	0	0	0	cpp	2017-10-05	2017-10-05	9 ms	cpp
+113	Path Sum II	path-sum-ii	M	Backtracking|Tree|Depth-First Search|Binary Tree	2	2	0	0	0	cpp	2017-10-05	2017-10-05	29 ms	cpp
+114	Flatten Binary Tree to Linked List	flatten-binary-tree-to-linked-list	M	Linked List|Stack|Tree|Depth-First Search|Binary Tree	1	1	0	0	0	java	2025-07-27	2025-07-27	0 ms	java
+120	Triangle	triangle	M	Array|Dynamic Programming	2	1	0	1	0	java	2026-07-06	2026-07-06	1 ms	java
+121	Best Time to Buy and Sell Stock	best-time-to-buy-and-sell-stock	E	Array|Dynamic Programming	1	1	0	0	0	java	2025-07-29	2025-07-29	1 ms	java
+124	Binary Tree Maximum Path Sum	binary-tree-maximum-path-sum	H	Dynamic Programming|Tree|Depth-First Search|Binary Tree|DP on Trees	6	2	4	0	0	cpp	2017-10-05	2017-11-26	19 ms	cpp
+125	Valid Palindrome	valid-palindrome	E	Two Pointers|String	1	1	0	0	0	java	2026-06-24	2026-06-24	2 ms	java
+127	Word Ladder	word-ladder	H	Hash Table|String|Breadth-First Search|Bidirectional Search	4	2	0	2	0	java	2025-04-14	2026-08-13	229 ms	java
+128	Longest Consecutive Sequence	longest-consecutive-sequence	M	Array|Hash Table|Union-Find	3	3	0	0	0	java	2026-06-19	2026-07-23	73 ms	java
+130	Surrounded Regions	surrounded-regions	M	Array|Depth-First Search|Breadth-First Search|Union-Find|Matrix	5	1	4	0	0	java	2026-07-06	2026-07-06	5 ms	java
+133	Clone Graph	clone-graph	M	Hash Table|Depth-First Search|Breadth-First Search|Graph Theory	1	1	0	0	0	java	2025-07-26	2025-07-26	28 ms	java
+135	Candy	candy	H	Array|Greedy	1	1	0	0	0	java	2025-02-21	2025-02-21	347 ms	java
+136	Single Number	single-number	E	Array|Bit Manipulation	3	3	0	0	0	java	2025-07-09	2026-07-23	1 ms	java
+139	Word Break	word-break	M	Array|Hash Table|String|Dynamic Programming|Trie|Memoization|Brute-Force Search	1	1	0	0	0	java	2025-09-11	2025-09-11	6 ms	java
+140	Word Break II	word-break-ii	H	Array|Hash Table|String|Dynamic Programming|Backtracking|Trie|Memoization	1	1	0	0	0	java	2025-02-06	2025-02-06	13 ms	java
+141	Linked List Cycle	linked-list-cycle	E	Hash Table|Linked List|Two Pointers|Floyd's Cycle Finding Algorithm	1	1	0	0	0	java	2026-07-06	2026-07-06	0 ms	java
+143	Reorder List	reorder-list	M	Linked List|Two Pointers|Stack|Recursion	2	1	0	0	1	java	2026-06-20	2026-06-20	4 ms	java
+146	LRU Cache	lru-cache	M	Hash Table|Linked List|Design|Doubly-Linked List	5	2	3	0	0	java	2024-08-04	2025-05-24	51 ms	java
+151	Reverse Words in a String	reverse-words-in-a-string	M	Two Pointers|String	4	4	0	0	0	java	2025-07-14	2026-07-23	16 ms	java
+153	Find Minimum in Rotated Sorted Array	find-minimum-in-rotated-sorted-array	M	Array|Binary Search	9	5	4	0	0	java	2026-06-20	2026-07-23	0 ms	java
+155	Min Stack	min-stack	M	Stack|Design	2	2	0	0	0	java	2026-08-16	2026-08-16	33 ms	java
+162	Find Peak Element	find-peak-element	M	Array|Binary Search	10	3	3	0	4	java	2025-05-17	2026-07-23	0 ms	java
+169	Majority Element	majority-element	E	Array|Hash Table|Divide and Conquer|Sorting|Counting|Boyer–Moore Majority Vote Algorithm	1	1	0	0	0	java	2025-07-25	2025-07-25	4 ms	java
+172	Factorial Trailing Zeroes	factorial-trailing-zeroes	M	Math	1	1	0	0	0	java	2026-07-04	2026-07-04	0 ms	java
+173	Binary Search Tree Iterator	binary-search-tree-iterator	M	Stack|Tree|Design|Binary Search Tree|Binary Tree|Iterator	4	3	1	0	0	java	2025-09-07	2025-09-07	16 ms	java
+189	Rotate Array	rotate-array	M	Array|Math|Two Pointers	1	1	0	0	0	java	2026-07-20	2026-07-20	0 ms	java
+190	Reverse Bits	reverse-bits	E	Divide and Conquer|Bit Manipulation	1	1	0	0	0	java	2026-08-16	2026-08-16	0 ms	java
+191	Number of 1 Bits	number-of-1-bits	E	Divide and Conquer|Bit Manipulation	1	1	0	0	0	java	2025-07-25	2025-07-25	0 ms	java
+198	House Robber	house-robber	M	Array|Dynamic Programming	5	4	0	1	0	java	2025-04-13	2026-07-23	0 ms	java
+199	Binary Tree Right Side View	binary-tree-right-side-view	M	Tree|Depth-First Search|Breadth-First Search|Binary Tree	3	3	0	0	0	java	2025-07-09	2026-07-23	1 ms	java
+200	Number of Islands	number-of-islands	M	Array|Depth-First Search|Breadth-First Search|Union-Find|Matrix	2	2	0	0	0	java	2026-06-22	2026-07-23	4 ms	java
+201	Bitwise AND of Numbers Range	bitwise-and-of-numbers-range	M	Bit Manipulation	1	1	0	0	0	java	2026-07-02	2026-07-02	3 ms	java
+202	Happy Number	happy-number	E	Hash Table|Math|Two Pointers|Floyd's Cycle Finding Algorithm	1	1	0	0	0	java	2025-08-12	2025-08-12	1 ms	java
+205	Isomorphic Strings	isomorphic-strings	E	Hash Table|String	2	1	1	0	0	java	2025-09-07	2025-09-07	11 ms	java
+206	Reverse Linked List	reverse-linked-list	E	Linked List|Recursion	2	2	0	0	0	java	2025-04-17	2026-05-29	0 ms	java
+207	Course Schedule	course-schedule	M	Depth-First Search|Breadth-First Search|Graph Theory|Topological Sort|Directed Acyclic Graph	2	1	0	0	1	java	2026-08-16	2026-08-16	10 ms	java
+208	Implement Trie (Prefix Tree)	implement-trie-prefix-tree	M	Hash Table|String|Design|Trie	3	3	0	0	0	java	2025-04-16	2026-07-23	46 ms	java
+209	Minimum Size Subarray Sum	minimum-size-subarray-sum	M	Array|Binary Search|Sliding Window|Prefix Sum	1	1	0	0	0	java	2025-07-26	2025-07-26	1 ms	java
+210	Course Schedule II	course-schedule-ii	M	Depth-First Search|Breadth-First Search|Graph Theory|Topological Sort	3	2	1	0	0	java	2025-09-02	2025-09-02	4 ms	java
+212	Word Search II	word-search-ii	H	Array|String|Backtracking|Trie|Matrix	5	1	1	0	3	java	2025-02-09	2025-02-09	1200 ms	java
+213	House Robber II	house-robber-ii	M	Array|Dynamic Programming	4	1	1	1	1	java	2025-04-13	2025-04-13	1 ms	java
+214	Shortest Palindrome	shortest-palindrome	H	String|Rolling Hash|String Matching|Hash Function|Manacher|Z Algorithm|Knuth–Morris–Pratt Algorithm	2	1	1	0	0	cpp	2017-11-19	2017-11-19	9 ms	cpp
+215	Kth Largest Element in an Array	kth-largest-element-in-an-array	M	Array|Divide and Conquer|Sorting|Heap (Priority Queue)|Quickselect	3	3	0	0	0	java	2025-05-17	2026-07-23	68 ms	java
+216	Combination Sum III	combination-sum-iii	M	Array|Backtracking	7	7	0	0	0	java	2025-04-29	2026-05-21	0 ms	java
+219	Contains Duplicate II	contains-duplicate-ii	E	Array|Hash Table|Sliding Window	1	1	0	0	0	java	2026-07-02	2026-07-02	24 ms	java
+226	Invert Binary Tree	invert-binary-tree	E	Tree|Depth-First Search|Breadth-First Search|Binary Tree	1	1	0	0	0	java	2025-08-12	2025-08-12	0 ms	java
+228	Summary Ranges	summary-ranges	E	Array	2	1	0	0	1	java	2026-07-20	2026-07-20	3 ms	java
+230	Kth Smallest Element in a BST	kth-smallest-element-in-a-bst	M	Tree|Depth-First Search|Binary Search Tree|Binary Tree	2	2	0	0	0	java	2025-07-26	2026-06-30	2 ms	java
+235	Lowest Common Ancestor of a Binary Search Tree	lowest-common-ancestor-of-a-binary-search-tree	M	Tree|Depth-First Search|Binary Search Tree|Binary Tree|Binary Lifting|Lowest Common Ancestor	1	1	0	0	0	java	2026-08-16	2026-08-16	5 ms	java
+236	Lowest Common Ancestor of a Binary Tree	lowest-common-ancestor-of-a-binary-tree	M	Tree|Depth-First Search|Binary Tree|Binary Lifting|Lowest Common Ancestor	3	3	0	0	0	java	2025-05-17	2026-07-23	36 ms	java
+238	Product of Array Except Self	product-of-array-except-self	M	Array|Prefix Sum	3	3	0	0	0	java	2025-07-09	2026-05-24	2 ms	java
+239	Sliding Window Maximum	sliding-window-maximum	H	Array|Queue|Sliding Window|Heap (Priority Queue)|Monotonic Queue|Range Minimum/Maximum Query	2	1	0	1	0	java	2025-04-26	2025-04-26	301 ms	java
+242	Valid Anagram	valid-anagram	E	Hash Table|String|Sorting	1	1	0	0	0	java	2025-07-27	2025-07-27	3 ms	java
+283	Move Zeroes	move-zeroes	E	Array|Two Pointers	3	2	1	0	0	java	2025-07-09	2026-05-27	2 ms	java
+295	Find Median from Data Stream	find-median-from-data-stream	H	Two Pointers|Design|Sorting|Heap (Priority Queue)|Data Stream	1	1	0	0	0	java	2026-08-12	2026-08-12	162 ms	java
+300	Longest Increasing Subsequence	longest-increasing-subsequence	M	Array|Binary Search|Dynamic Programming|Longest Increasing Subsequence	2	1	1	0	0	java	2025-09-11	2025-09-11	81 ms	java
+322	Coin Change	coin-change	M	Array|Dynamic Programming|Breadth-First Search|Knapsack Problem|Complete Knapsack	4	2	0	0	2	java	2024-07-28	2024-07-28	62 ms	java
+328	Odd Even Linked List	odd-even-linked-list	M	Linked List	7	3	1	0	3	java	2025-04-22	2026-05-29	0 ms	java
+334	Increasing Triplet Subsequence	increasing-triplet-subsequence	M	Array|Greedy|Longest Increasing Subsequence	7	2	5	0	0	java	2025-04-24	2026-05-27	2 ms	java
+338	Counting Bits	counting-bits	E	Dynamic Programming|Bit Manipulation	5	4	0	0	1	java|cpp	2017-08-20	2026-05-26	1 ms	java
+345	Reverse Vowels of a String	reverse-vowels-of-a-string	E	Two Pointers|String	2	2	0	0	0	java	2025-04-29	2026-05-27	7 ms	java
+347	Top K Frequent Elements	top-k-frequent-elements	M	Array|Hash Table|Divide and Conquer|Sorting|Heap (Priority Queue)|Bucket Sort|Counting|Quickselect	3	3	0	0	0	java	2026-08-15	2026-08-15	18 ms	java
+362	Design Hit Counter	design-hit-counter	M	Array|Binary Search|Design|Queue|Data Stream	1	1	0	0	0	java	2025-04-13	2025-04-13	0 ms	java
+374	Guess Number Higher or Lower	guess-number-higher-or-lower	E	Binary Search|Interactive	4	2	0	2	0	java	2025-07-18	2026-05-27	0 ms	java
+383	Ransom Note	ransom-note	E	Hash Table|String|Counting	1	1	0	0	0	java	2025-07-25	2025-07-25	1 ms	java
+392	Is Subsequence	is-subsequence	E	Two Pointers|String|Dynamic Programming	4	3	1	0	0	java	2025-05-01	2026-07-23	0 ms	java
+394	Decode String	decode-string	M	String|Stack|Recursion	3	2	1	0	0	java	2025-04-24	2026-05-28	3 ms	java
+399	Evaluate Division	evaluate-division	M	Array|String|Depth-First Search|Breadth-First Search|Union-Find|Graph Theory|Shortest Path|Bellman–Ford Algorithm|Floyd–Warshall Algorithm	2	2	0	0	0	java	2025-04-24	2026-05-27	5 ms	java
+433	Minimum Genetic Mutation	minimum-genetic-mutation	M	Hash Table|String|Breadth-First Search|Bidirectional Search	4	3	0	0	1	java	2025-04-14	2025-04-14	13 ms	java
+435	Non-overlapping Intervals	non-overlapping-intervals	M	Array|Dynamic Programming|Greedy|Sorting	5	3	2	0	0	java	2025-04-16	2026-09-22	131 ms	java
+437	Path Sum III	path-sum-iii	M	Tree|Depth-First Search|Binary Tree	11	4	5	0	2	java|cpp	2017-10-05	2026-05-25	18 ms	java
+443	String Compression	string-compression	M	Two Pointers|String	3	2	1	0	0	java	2025-07-09	2026-05-28	2 ms	java
+450	Delete Node in a BST	delete-node-in-a-bst	M	Tree|Binary Search Tree|Binary Tree	6	3	3	0	0	java	2025-04-24	2026-05-27	5 ms	java
+452	Minimum Number of Arrows to Burst Balloons	minimum-number-of-arrows-to-burst-balloons	M	Array|Greedy|Sorting	8	3	5	0	0	java	2025-04-24	2026-07-23	67 ms	java
+518	Coin Change II	coin-change-ii	M	Array|Dynamic Programming|Knapsack Problem|Complete Knapsack	2	1	1	0	0	java	2026-07-23	2026-07-23	16 ms	java
+543	Diameter of Binary Tree	diameter-of-binary-tree	E	Tree|Depth-First Search|Binary Tree|DP on Trees	2	1	1	0	0	cpp	2017-11-28	2017-11-28	6 ms	cpp
+547	Number of Provinces	number-of-provinces	M	Depth-First Search|Breadth-First Search|Union-Find|Graph Theory	2	2	0	0	0	java	2025-07-09	2026-05-21	7 ms	java
+605	Can Place Flowers	can-place-flowers	E	Array|Greedy	5	2	3	0	0	java	2025-04-17	2026-05-25	1 ms	java
+628	Maximum Product of Three Numbers	maximum-product-of-three-numbers	E	Array|Math|Sorting	2	2	0	0	0	java|cpp	2017-07-06	2025-04-26	39 ms	java
+637	Average of Levels in Binary Tree	average-of-levels-in-binary-tree	E	Tree|Depth-First Search|Breadth-First Search|Binary Tree	2	1	1	0	0	java	2025-07-25	2025-07-25	5 ms	java
+643	Maximum Average Subarray I	maximum-average-subarray-i	E	Array|Sliding Window	7	3	4	0	0	java	2025-04-24	2026-05-24	3 ms	java
+649	Dota2 Senate	dota2-senate	M	String|Greedy|Queue	10	1	9	0	0	java	2025-04-23	2025-04-23	10 ms	java
+678	Valid Parenthesis String	valid-parenthesis-string	M	String|Dynamic Programming|Stack|Greedy|Bracket Sequences	2	1	0	1	0	java	2026-08-16	2026-08-16	2 ms	java
+679	24 Game	24-game	H	Array|Math|Backtracking	3	1	2	0	0	java	2025-04-25	2025-04-25	11 ms	java
+684	Redundant Connection	redundant-connection	M	Depth-First Search|Breadth-First Search|Union-Find|Graph Theory	2	1	1	0	0	cpp	2017-10-05	2017-10-05	6 ms	cpp
+687	Longest Univalue Path	longest-univalue-path	M	Tree|Depth-First Search|Binary Tree|DP on Trees	3	2	1	0	0	cpp	2017-10-05	2017-10-05	66 ms	cpp
+700	Search in a Binary Search Tree	search-in-a-binary-search-tree	E	Tree|Binary Search Tree|Binary Tree	2	2	0	0	0	java	2025-07-09	2026-05-21	0 ms	java
+704	Binary Search	binary-search	E	Array|Binary Search	2	1	0	0	1	java	2026-08-12	2026-08-12	0 ms	java
+714	Best Time to Buy and Sell Stock with Transaction Fee	best-time-to-buy-and-sell-stock-with-transaction-fee	M	Array|Dynamic Programming|Greedy	1	1	0	0	0	java	2026-05-30	2026-05-30	107 ms	java
+724	Find Pivot Index	find-pivot-index	E	Array|Prefix Sum	2	2	0	0	0	java	2025-07-09	2026-05-24	1 ms	java
+735	Asteroid Collision	asteroid-collision	M	Array|Stack|Simulation	7	3	4	0	0	java	2025-04-27	2026-05-28	6 ms	java
+739	Daily Temperatures	daily-temperatures	M	Array|Stack|Monotonic Stack	2	2	0	0	0	java	2025-04-24	2026-05-24	74 ms	java
+746	Min Cost Climbing Stairs	min-cost-climbing-stairs	E	Array|Dynamic Programming	2	2	0	0	0	java	2025-05-04	2026-05-24	1 ms	java
+790	Domino and Tromino Tiling	domino-and-tromino-tiling	M	Dynamic Programming	8	1	6	0	1	java	2025-07-09	2026-05-29	0 ms	java
+841	Keys and Rooms	keys-and-rooms	M	Depth-First Search|Breadth-First Search|Graph Theory	2	2	0	0	0	java	2025-07-09	2026-05-27	0 ms	java
+844	Backspace String Compare	backspace-string-compare	E	Two Pointers|String|Stack|Simulation	2	1	0	0	1	java	2025-04-27	2025-04-27	2 ms	java
+872	Leaf-Similar Trees	leaf-similar-trees	E	Tree|Depth-First Search|Binary Tree	6	4	2	0	0	java	2025-05-17	2026-05-25	3 ms	java
+875	Koko Eating Bananas	koko-eating-bananas	M	Array|Binary Search	3	2	1	0	0	java	2025-04-15	2026-05-29	14 ms	java
+901	Online Stock Span	online-stock-span	M	Stack|Design|Monotonic Stack|Data Stream	5	2	3	0	0	java	2025-07-09	2026-05-24	33 ms	java
+933	Number of Recent Calls	number-of-recent-calls	E	Design|Queue|Data Stream	2	2	0	0	0	java	2025-05-17	2026-05-29	23 ms	java
+981	Time Based Key-Value Store	time-based-key-value-store	M	Hash Table|String|Binary Search|Design	2	1	0	0	1	java	2026-08-16	2026-08-16	157 ms	java
+994	Rotting Oranges	rotting-oranges	M	Array|Breadth-First Search|Matrix	5	2	3	0	0	java	2025-04-24	2026-05-22	3 ms	java
+1004	Max Consecutive Ones III	max-consecutive-ones-iii	M	Array|Binary Search|Sliding Window|Prefix Sum	6	4	2	0	0	java	2025-04-27	2026-05-24	10 ms	java
+1071	Greatest Common Divisor of Strings	greatest-common-divisor-of-strings	E	Math|String|Euclidean Algorithm|Greatest Common Divisor	3	2	1	0	0	java	2025-07-16	2026-05-28	14 ms	java
+1105	Filling Bookcase Shelves	filling-bookcase-shelves	M	Array|Dynamic Programming	1	1	0	0	0	java	2025-05-19	2025-05-19	2 ms	java
+1114	Print in Order	print-in-order	E	Concurrency	3	1	0	1	1	java	2025-04-02	2025-04-03	13 ms	java
+1115	Print FooBar Alternately	print-foobar-alternately	M	Concurrency	1	1	0	0	0	java	2025-04-03	2025-04-03	23 ms	java
+1116	Print Zero Even Odd	print-zero-even-odd	M	Concurrency	2	2	0	0	0	java	2025-04-03	2025-04-03	6 ms	java
+1117	Building H2O	building-h2o	M	Concurrency	1	1	0	0	0	java	2025-04-03	2025-04-03	18 ms	java
+1137	N-th Tribonacci Number	n-th-tribonacci-number	E	Math|Dynamic Programming|Memoization	2	2	0	0	0	java	2025-04-17	2026-05-24	0 ms	java
+1143	Longest Common Subsequence	longest-common-subsequence	M	String|Dynamic Programming|Longest Common Subsequence	4	2	0	1	1	java	2025-04-17	2026-05-27	185 ms	java
+1161	Maximum Level Sum of a Binary Tree	maximum-level-sum-of-a-binary-tree	M	Tree|Depth-First Search|Breadth-First Search|Binary Tree	3	2	1	0	0	java	2025-04-22	2026-05-29	6 ms	java
+1207	Unique Number of Occurrences	unique-number-of-occurrences	E	Array|Hash Table	3	3	0	0	0	java	2025-07-09	2026-05-27	3 ms	java
+1226	The Dining Philosophers	the-dining-philosophers	M	Concurrency	1	1	0	0	0	java	2025-04-04	2025-04-04	13 ms	java
+1268	Search Suggestions System	search-suggestions-system	M	Array|String|Binary Search|Trie|Sorting|Heap (Priority Queue)	7	2	3	0	2	java	2025-06-14	2026-05-22	93 ms	java
+1318	Minimum Flips to Make a OR b Equal to c	minimum-flips-to-make-a-or-b-equal-to-c	M	Bit Manipulation	3	2	1	0	0	java	2025-04-30	2026-05-20	0 ms	java
+1372	Longest ZigZag Path in a Binary Tree	longest-zigzag-path-in-a-binary-tree	M	Dynamic Programming|Tree|Depth-First Search|Binary Tree|DP on Trees	4	2	0	2	0	java	2025-04-17	2026-05-24	104 ms	java
+1431	Kids With the Greatest Number of Candies	kids-with-the-greatest-number-of-candies	E	Array	2	2	0	0	0	java	2025-04-29	2026-05-24	5 ms	java
+1448	Count Good Nodes in Binary Tree	count-good-nodes-in-binary-tree	M	Tree|Depth-First Search|Breadth-First Search|Binary Tree	2	2	0	0	0	java	2025-07-09	2026-05-21	2 ms	java
+1456	Maximum Number of Vowels in a Substring of Given Length	maximum-number-of-vowels-in-a-substring-of-given-length	M	String|Sliding Window	2	2	0	0	0	java	2025-04-15	2026-05-27	33 ms	java
+1466	Reorder Routes to Make All Paths Lead to the City Zero	reorder-routes-to-make-all-paths-lead-to-the-city-zero	M	Depth-First Search|Breadth-First Search|Graph Theory	2	2	0	0	0	java	2025-04-16	2026-05-28	81 ms	java
+1493	Longest Subarray of 1's After Deleting One Element	longest-subarray-of-1s-after-deleting-one-element	M	Array|Dynamic Programming|Sliding Window	2	2	0	0	0	java	2025-07-09	2026-05-27	4 ms	java
+1497	Check If Array Pairs Are Divisible by k	check-if-array-pairs-are-divisible-by-k	M	Array|Hash Table|Counting	6	1	5	0	0	java	2025-05-19	2025-05-19	48 ms	java
+1657	Determine if Two Strings Are Close	determine-if-two-strings-are-close	M	Hash Table|String|Sorting|Counting	5	2	3	0	0	java	2025-07-14	2026-05-28	119 ms	java
+1679	Max Number of K-Sum Pairs	max-number-of-k-sum-pairs	M	Array|Hash Table|Two Pointers|Sorting	4	3	0	1	0	java	2025-05-17	2026-05-21	23 ms	java
+1732	Find the Highest Altitude	find-the-highest-altitude	E	Array|Prefix Sum	2	2	0	0	0	java	2025-07-09	2026-05-28	0 ms	java
+1768	Merge Strings Alternately	merge-strings-alternately	E	Two Pointers|String	2	2	0	0	0	java	2025-04-16	2026-05-27	4 ms	java
+1894	Find the Student that Will Replace the Chalk	find-the-student-that-will-replace-the-chalk	M	Array|Binary Search|Simulation|Prefix Sum	1	1	0	0	0	java	2025-05-19	2025-05-19	2 ms	java
+1926	Nearest Exit from Entrance in Maze	nearest-exit-from-entrance-in-maze	M	Array|Breadth-First Search|Matrix	8	3	1	4	0	java	2025-07-09	2026-05-27	12 ms	java
+2095	Delete the Middle Node of a Linked List	delete-the-middle-node-of-a-linked-list	M	Linked List|Two Pointers	4	2	1	0	1	java	2025-04-16	2026-05-29	4 ms	java
+2130	Maximum Twin Sum of a Linked List	maximum-twin-sum-of-a-linked-list	M	Linked List|Two Pointers|Stack	2	2	0	0	0	java	2025-04-15	2026-05-29	8 ms	java
+2215	Find the Difference of Two Arrays	find-the-difference-of-two-arrays	E	Array|Hash Table	3	3	0	0	0	java	2025-05-17	2026-05-21	12 ms	java
+2300	Successful Pairs of Spells and Potions	successful-pairs-of-spells-and-potions	M	Array|Two Pointers|Binary Search|Sorting	2	1	1	0	0	java	2025-06-24	2025-06-24	91 ms	java
+2336	Smallest Number in Infinite Set	smallest-number-in-infinite-set	M	Hash Table|Design|Heap (Priority Queue)|Ordered Set	2	2	0	0	0	java	2025-07-09	2026-05-21	10 ms	java
+2352	Equal Row and Column Pairs	equal-row-and-column-pairs	M	Array|Hash Table|Matrix|Simulation	3	2	0	0	1	java	2025-05-03	2026-05-21	43 ms	java
+2390	Removing Stars From a String	removing-stars-from-a-string	M	String|Stack|Simulation	2	2	0	0	0	java	2025-04-24	2026-05-28	78 ms	java
+2462	Total Cost to Hire K Workers	total-cost-to-hire-k-workers	M	Array|Two Pointers|Heap (Priority Queue)|Simulation	5	2	3	0	0	java	2025-04-17	2026-05-28	52 ms	java
+2542	Maximum Subsequence Score	maximum-subsequence-score	M	Array|Greedy|Sorting|Heap (Priority Queue)	13	1	10	0	2	java	2025-04-16	2026-05-28	74 ms	java
+2571	Minimum Operations to Reduce an Integer to 0	minimum-operations-to-reduce-an-integer-to-0	M	Dynamic Programming|Greedy|Bit Manipulation	6	2	1	0	3	java	2025-05-19	2025-05-19	0 ms	java
+3046	Split the Array	split-the-array	E	Array|Hash Table|Counting	1	1	0	0	0	cpp	2025-05-22	2025-05-22	1 ms	cpp
+3076	Shortest Uncommon Substring in an Array	shortest-uncommon-substring-in-an-array	M	Array|Hash Table|String|Trie	4	1	2	0	1	java	2025-02-09	2025-02-09	873 ms	java
